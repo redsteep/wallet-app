@@ -1,0 +1,13 @@
+{
+  "name": "@wallet/universal-storage",
+  "version": "1.0.0",
+  "main": "src/index.ts",
+  "devDependencies": {
+    "@types/chrome": "^0.0.242"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-native": "*",
+    "react-native-mmkv": "^2.10.1"
+  }
+}

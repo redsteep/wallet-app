@@ -1,0 +1,16 @@
+{
+  "[javascript][javascriptreact][typescript][typescriptreact]": {
+    "editor.tabSize": 2,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "javascript.preferences.importModuleSpecifier": "non-relative",
+    "typescript.preferences.importModuleSpecifier": "non-relative"
+  },
+  "eslint.enable": true,
+  "eslint.format.enable": false,
+  "prettier.enable": true,
+  "prettier.arrowParens": "always",
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.format.semicolons": "insert",
+  "typescript.preferences.quoteStyle": "double",
+  "typescript.updateImportsOnFileMove.enabled": "always",
+}
