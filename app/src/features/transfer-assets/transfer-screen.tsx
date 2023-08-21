@@ -1,16 +1,15 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PanModal } from "@wallet/pan-modal";
-import { ZeroAddress, isAddress, parseEther } from "ethers";
 import { NotificationFeedbackType, notificationAsync } from "expo-haptics";
 import { Controller, useForm } from "react-hook-form";
 import { StyleSheet } from "react-native";
-import { useMutation, useQueryClient } from "react-query";
+import { useQueryClient } from "react-query";
 import { Button, Input, Spinner, Text, Theme, XStack, YStack } from "tamagui";
+import { isAddress, parseEther } from "viem";
+import { useSendTransaction } from "wagmi";
 import { z } from "zod";
 import { SafeAreaStack } from "~/components/safe-area-stack";
 import { NotDeployedWarning } from "~/features/transfer-assets/components/not-deployed-warning";
-import { useSimpleAccount } from "~/lib/hooks/use-simple-account";
-import { sendAndWaitUserOperation } from "~/lib/operations/send-user-operation";
 import { ACCOUNT_BALANCE, IS_DEPLOYED } from "~/lib/query-keys";
 
 const schema = z.object({
@@ -25,44 +24,27 @@ const schema = z.object({
   }),
 });
 
-type SchemaType = z.infer<typeof schema>;
-
 export function TransferScreen() {
   const queryClient = useQueryClient();
-  const simpleAccount = useSimpleAccount();
-  const accountAddress = simpleAccount?.getSender() ?? ZeroAddress;
 
-  const { formState, handleSubmit, control } = useForm<z.infer<typeof schema>>({
-    mode: "all",
-    resolver: zodResolver(schema),
+  const { data, isLoading, sendTransactionAsync } = useSendTransaction({
+    onSettled() {
+      queryClient.invalidateQueries([ACCOUNT_BALANCE]);
+      queryClient.invalidateQueries([IS_DEPLOYED]);
+    },
   });
 
-  // SimpleAccount#getInitCode() doesn't return valid init code,
-  // resorting to accessing "private" class field
-  // const { data: estimatedCreationGas } = useEstimateCreationGass(simpleAccount?.initCode);
-
-  const {
-    data,
-    isLoading,
-    mutate: sendUserOperation,
-  } = useMutation(
-    async ({ accountAddress, transferAmount }: SchemaType) => {
-      const parsedTransferAmount = parseEther(String(transferAmount));
-      const userOp = simpleAccount!.execute(accountAddress, parsedTransferAmount, "0x");
-      return await sendAndWaitUserOperation(userOp);
-    },
-    {
-      onSettled() {
-        queryClient.invalidateQueries([ACCOUNT_BALANCE]);
-        queryClient.invalidateQueries([IS_DEPLOYED]);
-      },
-    },
-  );
+  const { formState, handleSubmit, control } = useForm<z.infer<typeof schema>>({
+    resolver: zodResolver(schema),
+    mode: "all",
+  });
 
   const onSubmit = handleSubmit(
     (values) => {
-      console.log(values);
-      sendUserOperation(values);
+      sendTransactionAsync({
+        to: values.accountAddress,
+        value: parseEther(values.transferAmount),
+      });
     },
     () => notificationAsync(NotificationFeedbackType.Error),
   );
@@ -81,7 +63,7 @@ export function TransferScreen() {
             </Text>
           </XStack>
 
-          {data && (
+          {data?.hash && (
             <YStack
               paddingVertical="$3"
               paddingHorizontal="$3"
@@ -96,7 +78,7 @@ export function TransferScreen() {
               </Text>
 
               <Text fontSize="$4" color="white">
-                Transaction Hash: {data.transactionHash}
+                Transaction Hash: {data.hash}
               </Text>
             </YStack>
           )}
@@ -150,7 +132,7 @@ export function TransferScreen() {
           </YStack>
 
           <YStack paddingVertical="$4">
-            <NotDeployedWarning accountAddress={accountAddress} />
+            <NotDeployedWarning />
           </YStack>
         </SafeAreaStack>
       </Theme>

@@ -3,10 +3,11 @@ import * as WebBrowser from "expo-web-browser";
 
 import Web3Auth, { LOGIN_PROVIDER, OPENLOGIN_NETWORK } from "@web3auth/react-native-sdk";
 
+import type { Hex } from "viem";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import { persistentZustandStorage } from "~/utils/persistent-zustand";
 import { WEB3AUTH_CLIENT_ID } from "~/lib/env-variables";
+import { persistentZustandStorage } from "~/utils/persistent-zustand";
 
 const web3auth = new Web3Auth(WebBrowser, {
   clientId: WEB3AUTH_CLIENT_ID,
@@ -15,9 +16,9 @@ const web3auth = new Web3Auth(WebBrowser, {
 
 interface Web3AuthState {
   userInfo?: unknown;
-  privateKey?: string;
+  privateKey?: Hex;
   actions: {
-    loginWith: (providerKey: string) => Promise<void>;
+    loginWith: (providerKey: Hex) => Promise<void>;
     logout: () => Promise<void>;
   };
 }
@@ -27,22 +28,25 @@ export const useWeb3Auth = create<Web3AuthState>()(
     (set) =>
       <Web3AuthState>{
         actions: {
-          async loginWith(providerKey: string) {
+          loginWith: async (providerKey: string) => {
             try {
               const loginResult = await web3auth.login({
                 loginProvider: LOGIN_PROVIDER[providerKey as never],
                 redirectUrl: Linking.createURL("onboarding"),
               });
 
-              set({
-                privateKey: loginResult.privKey,
-                userInfo: loginResult.userInfo,
-              });
+              if (loginResult.privKey) {
+                set({
+                  privateKey: `0x${loginResult.privKey}`,
+                  userInfo: loginResult.userInfo,
+                });
+              }
             } catch (error) {
               console.warn(error);
             }
           },
-          async logout() {
+
+          logout: async () => {
             try {
               await web3auth.logout({
                 redirectUrl: Linking.createURL("onboarding"),

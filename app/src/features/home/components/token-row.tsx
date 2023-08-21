@@ -1,21 +1,16 @@
-import { FixedNumber, formatEther } from "ethers";
-import { useMemo } from "react";
 import { Stack, Text, XStack, YStack } from "tamagui";
-import { useAccountBalance } from "~/lib/hooks/use-account-balance";
+import type { Hex } from "viem";
+import { useBalance } from "wagmi";
+import * as dnum from "dnum";
 
 interface TokenRowProps {
-  accountAddress: string;
+  accountAddress?: Hex;
   tokenName: string;
 }
 
 export function TokenRow({ accountAddress, tokenName }: TokenRowProps) {
-  const { data, isLoading } = useAccountBalance(accountAddress);
-  const accountBalance = data ?? 0n;
-
-  const formattedEther = useMemo(
-    () => FixedNumber.fromString(formatEther(accountBalance)).round(4).toString(),
-    [accountBalance],
-  );
+  const { data } = useBalance({ address: accountAddress });
+  const formattedBalance = dnum.format([data?.value ?? 0n, 18], { digits: 4 });
 
   return (
     <XStack alignItems="center" space="$2.5">
@@ -23,7 +18,9 @@ export function TokenRow({ accountAddress, tokenName }: TokenRowProps) {
 
       <YStack space="$1">
         <Text fontWeight="500">{tokenName}</Text>
-        <Text color="$gray10">{!isLoading ? `${formattedEther} ETH` : "Loading..."}</Text>
+        <Text color="$gray10">
+          {data ? `${formattedBalance} ${data.symbol}` : "Loading..."}
+        </Text>
       </YStack>
     </XStack>
   );

@@ -19,13 +19,17 @@ export type HomeStackScreenProps<T extends keyof HomeStackParamList> =
 export function HomeNavigator() {
   return (
     <PanModalProvider>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Navigator
+        screenOptions={{
+          headerShown: false,
+        }}
+      >
         <Stack.Screen name="Assets" component={AssetsScreen} />
         <Stack.Group
           screenOptions={{
-            statusBarStyle: "light",
+            animation: "fade",
+            animationDuration: 0,
             presentation: "transparentModal",
-            animation: "none",
           }}
         >
           <Stack.Screen name="Receive" component={ReceiveScreen} />

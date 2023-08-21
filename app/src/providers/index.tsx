@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { StyleSheet } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider, initialWindowMetrics } from "react-native-safe-area-context";
@@ -6,13 +5,13 @@ import { QueryClient, QueryClientProvider } from "react-query";
 import { Stack, TamaguiProvider, Theme } from "tamagui";
 import { Wrap } from "~/components/conditional-wrap";
 import { isExtension } from "~/lib/platform-constants";
-import { EthersRpcProvider } from "~/providers/ethers-rpc-provider";
+import { WagmiProvider } from "~/providers/wagmi-provider";
 
 import config from "tamagui.config";
 
-export function AppProvider({ children }: React.PropsWithChildren) {
-  const queryClient = useMemo(() => new QueryClient(), []);
+const queryClient = new QueryClient();
 
+export function AppProvider({ children }: React.PropsWithChildren) {
   const wrappedChildren = (
     <Wrap
       if={isExtension}
@@ -25,11 +24,11 @@ export function AppProvider({ children }: React.PropsWithChildren) {
     <GestureHandlerRootView style={styles.gestureHandlerContainer}>
       <SafeAreaProvider initialMetrics={initialWindowMetrics}>
         <QueryClientProvider client={queryClient}>
-          <EthersRpcProvider>
-            <TamaguiProvider config={config}>
+          <TamaguiProvider config={config}>
+            <WagmiProvider>
               <Theme name="light">{wrappedChildren}</Theme>
-            </TamaguiProvider>
-          </EthersRpcProvider>
+            </WagmiProvider>
+          </TamaguiProvider>
         </QueryClientProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

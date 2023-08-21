@@ -1,28 +1,33 @@
 import { PanModal } from "@wallet/pan-modal";
-import { ZeroAddress } from "ethers";
 import { Pressable } from "react-native";
 import { Text, XStack, YStack } from "tamagui";
 import { SafeAreaStack } from "~/components/safe-area-stack";
 import { Header } from "~/features/home/components/header";
 import { TokenRow } from "~/features/home/components/token-row";
-import { useSimpleAccount } from "~/lib/hooks/use-simple-account";
+import BottomSheet from "@gorhom/bottom-sheet";
+import { useEffect, useMemo, useRef } from "react";
+import { LoginScreen } from "~/features/onboarding/login-screen";
+import { useAccount } from "wagmi";
 
 export function AssetsScreen() {
-  const simpleAccount = useSimpleAccount();
-  const accountAddress = simpleAccount?.getSender() ?? ZeroAddress;
+  const { address } = useAccount();
 
-  console.debug(accountAddress);
+  const bottomSheetRef = useRef<BottomSheet>(null);
+  const snapPoints = useMemo(() => ["25%", "50%"], []);
+
+  // TODO: present conditionally after onboarding is updated
+  useEffect(() => bottomSheetRef.current?.expand(), []);
 
   return (
     <PanModal.Offscreen disableScaling>
       <SafeAreaStack
         flexDirection="column"
         justifyContent="space-between"
-        backgroundColor="white"
+        backgroundColor="$backgroundStrong"
         paddingHorizontal="$4"
       >
         <YStack flex={1}>
-          <Header accountAddress={accountAddress} />
+          <Header accountAddress={address} />
 
           <XStack space="$3">
             <Pressable>
@@ -39,11 +44,11 @@ export function AssetsScreen() {
           </XStack>
 
           <YStack paddingVertical="$4" space="$3">
-            <TokenRow accountAddress={accountAddress} tokenName="Ethereum" />
+            <TokenRow accountAddress={address} tokenName="Ethereum" />
           </YStack>
         </YStack>
 
-        <XStack justifyContent="center" paddingVertical="$4" space="$4">
+        <XStack justifyContent="center" paddingVertical="$4" space="$2">
           <PanModal.Trigger
             destination={{ name: "Receive" }}
             style={{ borderRadius: 16, overflow: "hidden" }}
@@ -66,6 +71,10 @@ export function AssetsScreen() {
             </YStack>
           </PanModal.Trigger>
         </XStack>
+
+        <BottomSheet ref={bottomSheetRef} snapPoints={snapPoints}>
+          <LoginScreen />
+        </BottomSheet>
       </SafeAreaStack>
     </PanModal.Offscreen>
   );

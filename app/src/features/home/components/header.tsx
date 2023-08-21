@@ -4,7 +4,7 @@ import { useWeb3Auth } from "~/lib/web3auth";
 import { shortenAddress } from "~/utils/shorten-address";
 
 interface HeaderProps {
-  accountAddress: string;
+  accountAddress?: string;
 }
 
 export function Header({ accountAddress }: HeaderProps) {
@@ -13,7 +13,7 @@ export function Header({ accountAddress }: HeaderProps) {
   return (
     <XStack height="$5" justifyContent="space-between" alignItems="center">
       <Text fontSize="$8" fontWeight="700">
-        💵 {shortenAddress(accountAddress)}
+        {accountAddress ? shortenAddress(accountAddress) : "Loading..."}
       </Text>
 
       <TouchableOpacity onPress={logout}>
