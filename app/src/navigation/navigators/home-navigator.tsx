@@ -19,13 +19,7 @@ export type HomeStackScreenProps<T extends keyof HomeStackParamList> =
 export function HomeNavigator() {
   return (
     <PanModalProvider>
-      <Stack.Navigator
-        initialRouteName="Assets"
-        screenOptions={{
-          statusBarStyle: "dark",
-          headerShown: false,
-        }}
-      >
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Assets" component={AssetsScreen} />
         <Stack.Group
           screenOptions={{
