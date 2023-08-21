@@ -1,3 +1,5 @@
+import "fast-text-encoding";
+
 import { Platform } from "react-native";
 import { Buffer } from "@craftzdog/react-native-buffer";
 

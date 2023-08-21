@@ -1,7 +1,6 @@
+import type { NavigatorScreenParams } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { LoginScreen } from "~/features/onboarding/login-screen";
-import { useSimpleAccount } from "~/lib/hooks/use-simple-account";
 import {
   HomeNavigator,
   type HomeStackParamList,
@@ -11,7 +10,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export type RootStackParamList = {
   Login: undefined;
-  Home: HomeStackParamList;
+  Home: NavigatorScreenParams<HomeStackParamList>;
 };
 
 export type RootStackScreenProps<T extends keyof RootStackParamList> =

@@ -1,14 +1,23 @@
+import { SmartAccountProvider } from "@alchemy/aa-core";
 import { StyleSheet } from "react-native";
+import { useQuery } from "react-query";
 import { Text, YStack } from "tamagui";
-import { useIsDeployed } from "~/features/transfer-assets/hooks/use-is-deployed";
+import { useAccount } from "wagmi";
+import { IS_DEPLOYED } from "~/lib/query-keys";
 
-interface NotDeployedWarningProps {
-  accountAddress: string;
-}
+export function NotDeployedWarning() {
+  const { address, connector } = useAccount();
 
-export function NotDeployedWarning({ accountAddress }: NotDeployedWarningProps) {
-  const { data: isDeployed, isLoading: loadingDeployStatus } =
-    useIsDeployed(accountAddress);
+  const { data: isDeployed, isLoading: loadingDeployStatus } = useQuery(
+    [IS_DEPLOYED, address],
+    async () => {
+      const provider = await connector?.getProvider();
+      if (provider instanceof SmartAccountProvider) {
+        return await provider.account?.isAccountDeployed();
+      }
+    },
+    { enabled: Boolean(connector) },
+  );
 
   if (loadingDeployStatus || isDeployed) {
     return null;
