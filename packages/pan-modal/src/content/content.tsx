@@ -1,12 +1,7 @@
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { ImpactFeedbackStyle, impactAsync } from "expo-haptics";
 import { useCallback, useEffect, useMemo } from "react";
-import {
-  BackHandler,
-  StyleSheet,
-  View,
-  useColorScheme,
-  type ViewProps,
-} from "react-native";
+import { View, type ViewProps } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   Extrapolate,
@@ -26,7 +21,6 @@ import {
   FLING_LIMIT,
   SPRING_CONFIG,
 } from "../utils/constants";
-import { useFocusEffect, useNavigation, useRoute } from "@react-navigation/native";
 
 type PanModalContentProps = ViewProps;
 
