@@ -8,10 +8,7 @@ import {
 } from "react-native-mmkv";
 import { storage } from "./storage";
 
-type StorageHookReturnType<T> = [
-  value: T | undefined,
-  setValue: (value?: T) => void,
-];
+type StorageHookReturnType<T> = [value: T | undefined, setValue: (value?: T) => void];
 
 type StorageHookFunction<T> = (key: string) => StorageHookReturnType<T>;
 
@@ -33,9 +30,7 @@ function createChromeStorageHook<T>(getter: (key: string) => Promise<T>) {
     }, [key]);
 
     useEffect(() => {
-      const listener = (
-        storageChanges: Record<string, chrome.storage.StorageChange>,
-      ) => {
+      const listener = (storageChanges: Record<string, chrome.storage.StorageChange>) => {
         if (key in storageChanges) {
           setValue(storageChanges[key].newValue);
         }

@@ -1,8 +1,7 @@
 import { MMKV } from "react-native-mmkv";
 
 const chromeStorage = window.chrome?.storage?.local;
-const mmkvStorage =
-  typeof chromeStorage === "undefined" ? new MMKV() : undefined;
+const mmkvStorage = typeof chromeStorage === "undefined" ? new MMKV() : undefined;
 
 async function getFromChromeStorage<T>(key: string) {
   const storageItems = await chromeStorage.get(key);

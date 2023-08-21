@@ -6,8 +6,8 @@
     "@types/chrome": "^0.0.242"
   },
   "peerDependencies": {
-    "react": "*",
-    "react-native": "*",
-    "react-native-mmkv": "^2.10.1"
+    "react": ">=16.0.0",
+    "react-native": ">=0.72.0",
+    "react-native-mmkv": ">=2.10.0"
   }
 }
