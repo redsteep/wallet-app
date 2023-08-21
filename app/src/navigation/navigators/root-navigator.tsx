@@ -18,20 +18,9 @@ export type RootStackScreenProps<T extends keyof RootStackParamList> =
   NativeStackScreenProps<RootStackParamList, T>;
 
 export function RootNavigator() {
-  const simpleAccount = useSimpleAccount();
-
   return (
-    <Stack.Navigator
-      screenOptions={{
-        headerShown: false,
-        statusBarStyle: "dark",
-      }}
-    >
-      {simpleAccount ? (
-        <Stack.Screen name="Home" component={HomeNavigator} />
-      ) : (
-        <Stack.Screen name="Login" component={LoginScreen} />
-      )}
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Home" component={HomeNavigator} />
     </Stack.Navigator>
   );
 }
