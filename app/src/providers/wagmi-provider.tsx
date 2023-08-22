@@ -1,13 +1,17 @@
 import { useEffect } from "react";
-import { WagmiConfig, configureChains, createConfig, sepolia } from "wagmi";
+import { type Address, WagmiConfig, configureChains, createConfig, sepolia } from "wagmi";
 import { publicProvider } from "wagmi/providers/public";
+import {
+  BUNDLER_URL,
+  ENTRYPOINT_ADDRESS,
+  PAYMASTER_URL,
+  SIMPLE_ACCOUNT_FACTORY_ADDRESS,
+} from "~/lib/env-variables";
 import { SmartAccountConnector } from "~/lib/smart-account-connector";
 import { useWeb3Auth } from "~/lib/web3auth";
 
-const chain = sepolia;
-
 const { publicClient, webSocketPublicClient } = configureChains(
-  [chain],
+  [sepolia],
   [publicProvider()],
 );
 
@@ -26,9 +30,14 @@ export function WagmiProvider({ children }: React.PropsWithChildren) {
     }
 
     const connector = new SmartAccountConnector({
-      chain,
+      chains: [sepolia],
       options: {
         privateKey,
+        bundlerUrl: BUNDLER_URL,
+        paymasterUrl: PAYMASTER_URL,
+        entryPointAddress: ENTRYPOINT_ADDRESS as Address,
+        factoryAddress: SIMPLE_ACCOUNT_FACTORY_ADDRESS as Address,
+        paymasterToken: "0x3870419Ba2BBf0127060bCB37f69A1b1C090992B",
       },
     });
 
