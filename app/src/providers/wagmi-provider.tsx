@@ -1,24 +1,37 @@
 import { useEffect } from "react";
-import { type Address, WagmiConfig, configureChains, createConfig, sepolia } from "wagmi";
+import { WagmiConfig, configureChains, createConfig, sepolia, type Address } from "wagmi";
 import { publicProvider } from "wagmi/providers/public";
 import {
   BUNDLER_URL,
   ENTRYPOINT_ADDRESS,
+  PAYMASTER_TOKEN_ADDRESS,
   PAYMASTER_URL,
   SIMPLE_ACCOUNT_FACTORY_ADDRESS,
 } from "~/lib/env-variables";
 import { SmartAccountConnector } from "~/lib/smart-account-connector";
 import { useWeb3Auth } from "~/lib/web3auth";
 
-const { publicClient, webSocketPublicClient } = configureChains(
+const { chains, publicClient, webSocketPublicClient } = configureChains(
   [sepolia],
   [publicProvider()],
 );
 
+const smartAccountConnector = new SmartAccountConnector({
+  chains,
+  options: {
+    bundlerUrl: BUNDLER_URL,
+    entryPointAddress: ENTRYPOINT_ADDRESS as Address,
+    factoryAddress: SIMPLE_ACCOUNT_FACTORY_ADDRESS as Address,
+    paymasterUrl: PAYMASTER_URL,
+    paymasterTokenAddress: PAYMASTER_TOKEN_ADDRESS as Address,
+  },
+});
+
 const wagmiConfig = createConfig({
+  autoConnect: true,
+  connectors: [smartAccountConnector],
   publicClient,
   webSocketPublicClient,
-  autoConnect: true,
 });
 
 export function WagmiProvider({ children }: React.PropsWithChildren) {
@@ -26,28 +39,12 @@ export function WagmiProvider({ children }: React.PropsWithChildren) {
 
   useEffect(() => {
     if (typeof privateKey === "undefined") {
+      wagmiConfig.clearState();
       return;
     }
-
-    const connector = new SmartAccountConnector({
-      chains: [sepolia],
-      options: {
-        privateKey,
-        bundlerUrl: BUNDLER_URL,
-        paymasterUrl: PAYMASTER_URL,
-        entryPointAddress: ENTRYPOINT_ADDRESS as Address,
-        factoryAddress: SIMPLE_ACCOUNT_FACTORY_ADDRESS as Address,
-        paymasterToken: "0x3870419Ba2BBf0127060bCB37f69A1b1C090992B",
-      },
-    });
-
-    wagmiConfig.setConnectors([connector]);
+    smartAccountConnector.setSigner(privateKey);
     wagmiConfig.autoConnect();
-
-    return () => {
-      wagmiConfig.clearState();
-    };
   }, [privateKey]);
 
-  return <WagmiConfig config={wagmiConfig} children={children} />;
+  return <WagmiConfig config={wagmiConfig}>{children}</WagmiConfig>;
 }

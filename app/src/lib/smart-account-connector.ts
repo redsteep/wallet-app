@@ -1,12 +1,13 @@
 import {
   LocalAccountSigner,
+  type SimpleSmartAccountOwner,
   SimpleSmartContractAccount,
   SmartAccountProvider,
-  type UserOperationRequest,
-  type UserOperationStruct,
   deepHexlify,
   resolveProperties,
   type SmartAccountProviderOpts,
+  type UserOperationRequest,
+  type UserOperationStruct,
 } from "@alchemy/aa-core";
 import type { Address, Hex, WalletClient as WalletClient_ } from "viem";
 import {
@@ -26,14 +27,12 @@ type WalletClient<
 > = WalletClient_<TTransport, TChain, TAccount>;
 
 type SmartAccountConnectorOptions = SmartAccountProviderOpts & {
-  privateKey: Hex;
-
   bundlerUrl: string;
   entryPointAddress: Address;
   factoryAddress: Address;
 
   paymasterUrl?: string;
-  paymasterToken?: Address;
+  paymasterTokenAddress?: Address;
 };
 
 type SponsorUserOperationRequest = {
@@ -60,12 +59,13 @@ export class SmartAccountConnector extends Connector<
   readonly ready = true;
 
   #provider?: SmartAccountProvider;
+  #signer?: SimpleSmartAccountOwner;
 
   constructor({
     chains,
     options,
   }: {
-    chains: [Chain, ...Chain[]];
+    chains: Chain[];
     options: SmartAccountConnectorOptions;
   }) {
     super({ chains, options });
@@ -74,6 +74,7 @@ export class SmartAccountConnector extends Connector<
   async connect() {
     const provider = await this.getProvider();
     if (!provider) throw new ConnectorNotFoundError();
+    if (!this.#signer) throw new Error("Signer is required");
 
     if (provider.on) {
       provider.on("accountsChanged", this.onAccountsChanged);
@@ -82,6 +83,16 @@ export class SmartAccountConnector extends Connector<
     }
 
     this.emit("message", { type: "connecting" });
+
+    provider.connect((rpcClient) => {
+      return new SimpleSmartContractAccount({
+        owner: this.#signer!,
+        factoryAddress: this.options.factoryAddress,
+        entryPointAddress: this.options.entryPointAddress,
+        chain: this.chains[0],
+        rpcClient,
+      });
+    });
 
     const account = await this.getAccount();
     const id = await this.getChainId();
@@ -117,23 +128,23 @@ export class SmartAccountConnector extends Connector<
         this.options.bundlerUrl,
         this.options.entryPointAddress,
         this.chains[0],
-      ).connect((rpcClient) => {
-        return new SimpleSmartContractAccount({
-          owner: LocalAccountSigner.privateKeyToAccountSigner(this.options.privateKey),
-          factoryAddress: this.options.factoryAddress,
-          entryPointAddress: this.options.entryPointAddress,
-          chain: this.chains[0],
-          rpcClient,
-        });
-      });
+      );
 
-      if (this.options.paymasterUrl && this.options.paymasterToken) {
+      if (this.options.paymasterUrl && this.options.paymasterTokenAddress) {
         const paymasterClient = createPublicClient({
           chain: this.chains[0],
           transport: http(this.options.paymasterUrl),
         });
 
         this.#provider = this.#provider.withPaymasterMiddleware({
+          dummyPaymasterDataMiddleware: async (struct) => {
+            struct.callGasLimit = 0n;
+            struct.preVerificationGas = 0n;
+            struct.verificationGasLimit = 0n;
+            struct.paymasterAndData = "0x";
+            return struct;
+          },
+
           paymasterDataMiddleware: async (struct) => {
             const userOperation: UserOperationRequest = deepHexlify(
               await resolveProperties(struct),
@@ -145,7 +156,7 @@ export class SmartAccountConnector extends Connector<
                 params: [
                   userOperation,
                   this.options.entryPointAddress,
-                  { type: "erc20token", token: this.options.paymasterToken! },
+                  { type: "erc20token", token: this.options.paymasterTokenAddress! },
                 ],
               });
 
@@ -174,13 +185,13 @@ export class SmartAccountConnector extends Connector<
     });
   }
 
+  async setSigner(privateKey: Hex) {
+    this.#signer = LocalAccountSigner.privateKeyToAccountSigner(privateKey);
+    // await this.connect();
+  }
+
   async isAuthorized() {
-    try {
-      const account = await this.getAccount();
-      return Boolean(account);
-    } catch {
-      return false;
-    }
+    return typeof this.#signer !== "undefined";
   }
 
   protected onAccountsChanged(_accounts: string[]) {
