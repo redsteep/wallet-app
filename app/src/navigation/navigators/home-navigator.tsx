@@ -10,7 +10,9 @@ const Stack = createNativeStackNavigator<HomeStackParamList>();
 export type HomeStackParamList = {
   Assets: undefined;
   Receive: undefined;
-  Transfer: undefined;
+  Transfer: {
+    tokenAddress?: `0x${string}`;
+  };
 };
 
 export type HomeStackScreenProps<T extends keyof HomeStackParamList> =

@@ -1,13 +1,13 @@
+import BottomSheet from "@gorhom/bottom-sheet";
 import { PanModal } from "@wallet/pan-modal";
+import { useMemo, useRef } from "react";
 import { Pressable } from "react-native";
-import { Text, XStack, YStack } from "tamagui";
+import { ScrollView, Text, XStack, YStack } from "tamagui";
+import { useAccount } from "wagmi";
 import { SafeAreaStack } from "~/components/safe-area-stack";
 import { Header } from "~/features/home/components/header";
 import { TokenRow } from "~/features/home/components/token-row";
-import BottomSheet from "@gorhom/bottom-sheet";
-import { useEffect, useMemo, useRef } from "react";
 import { LoginScreen } from "~/features/onboarding/login-screen";
-import { useAccount } from "wagmi";
 
 export function AssetsScreen() {
   const { address } = useAccount();
@@ -15,11 +15,8 @@ export function AssetsScreen() {
   const bottomSheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ["25%", "50%"], []);
 
-  // TODO: present conditionally after onboarding is updated
-  useEffect(() => bottomSheetRef.current?.expand(), []);
-
   return (
-    <PanModal.Offscreen disableScaling>
+    <PanModal.Offscreen>
       <SafeAreaStack
         flexDirection="column"
         justifyContent="space-between"
@@ -43,34 +40,17 @@ export function AssetsScreen() {
             </Pressable>
           </XStack>
 
-          <YStack paddingVertical="$4" space="$3">
-            <TokenRow accountAddress={address} tokenName="Ethereum" />
-          </YStack>
+          <ScrollView>
+            <YStack paddingVertical="$4" space="$3">
+              <TokenRow accountAddress={address} tokenName="Ethereum" />
+              <TokenRow
+                accountAddress={address}
+                tokenAddress="0x3870419Ba2BBf0127060bCB37f69A1b1C090992B"
+                tokenName="Stackup Token"
+              />
+            </YStack>
+          </ScrollView>
         </YStack>
-
-        <XStack justifyContent="center" paddingVertical="$4" space="$2">
-          <PanModal.Trigger
-            destination={{ name: "Receive" }}
-            style={{ borderRadius: 16, overflow: "hidden" }}
-          >
-            <YStack backgroundColor="black" paddingVertical="$3" paddingHorizontal="$4">
-              <Text fontSize="$6" fontWeight="600" color="white">
-                Receive
-              </Text>
-            </YStack>
-          </PanModal.Trigger>
-
-          <PanModal.Trigger
-            destination={{ name: "Transfer" }}
-            style={{ borderRadius: 16, overflow: "hidden" }}
-          >
-            <YStack backgroundColor="black" paddingVertical="$3" paddingHorizontal="$4">
-              <Text fontSize="$6" fontWeight="600" color="white">
-                Transfer
-              </Text>
-            </YStack>
-          </PanModal.Trigger>
-        </XStack>
 
         <BottomSheet ref={bottomSheetRef} snapPoints={snapPoints}>
           <LoginScreen />

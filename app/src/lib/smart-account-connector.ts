@@ -1,17 +1,24 @@
 import {
   LocalAccountSigner,
+  type SimpleSmartAccountOwner,
   SimpleSmartContractAccount,
   SmartAccountProvider,
+  deepHexlify,
+  resolveProperties,
   type SmartAccountProviderOpts,
+  type UserOperationRequest,
+  type UserOperationStruct,
 } from "@alchemy/aa-core";
-import type { Hex, WalletClient as WalletClient_ } from "viem";
-import { createWalletClient, http, type Account, type Transport } from "viem";
-import { Connector, ConnectorNotFoundError, type Chain } from "wagmi";
+import type { Address, Hex, WalletClient as WalletClient_ } from "viem";
 import {
-  BUNDLER_URL,
-  ENTRYPOINT_ADDRESS,
-  SIMPLE_ACCOUNT_FACTORY_ADDRESS,
-} from "~/lib/env-variables";
+  createPublicClient,
+  createWalletClient,
+  custom,
+  http,
+  type Account,
+  type Transport,
+} from "viem";
+import { Connector, ConnectorNotFoundError, type Chain } from "wagmi";
 
 type WalletClient<
   TTransport extends Transport = Transport,
@@ -19,26 +26,55 @@ type WalletClient<
   TAccount extends Account = Account,
 > = WalletClient_<TTransport, TChain, TAccount>;
 
-type Opts = SmartAccountProviderOpts & {
-  privateKey?: Hex;
+type SmartAccountConnectorOptions = SmartAccountProviderOpts & {
+  bundlerUrl: string;
+  entryPointAddress: Address;
+  factoryAddress: Address;
+
+  paymasterUrl?: string;
+  paymasterTokenAddress?: Address;
 };
 
-export class SmartAccountConnector extends Connector<SmartAccountProvider, Opts> {
+type SponsorUserOperationRequest = {
+  Method: "pm_sponsorUserOperation";
+  Parameters: [
+    userOp: UserOperationStruct,
+    entryPoint: Address,
+    context: { type: "payg" } | { type: "erc20token"; token: Address },
+  ];
+  ReturnType: {
+    paymasterAndData: Hex;
+    preVerificationGas: Hex;
+    verificationGasLimit: Hex;
+    callGasLimit: Hex;
+  };
+};
+
+export class SmartAccountConnector extends Connector<
+  SmartAccountProvider,
+  SmartAccountConnectorOptions
+> {
   readonly id = "smart-account";
   readonly name = "Smart Account";
   readonly ready = true;
 
-  #chain: Chain;
   #provider?: SmartAccountProvider;
+  #signer?: SimpleSmartAccountOwner;
 
-  constructor({ chain, options }: { chain: Chain; options: Opts }) {
-    super({ options });
-    this.#chain = chain;
+  constructor({
+    chains,
+    options,
+  }: {
+    chains: Chain[];
+    options: SmartAccountConnectorOptions;
+  }) {
+    super({ chains, options });
   }
 
   async connect() {
     const provider = await this.getProvider();
     if (!provider) throw new ConnectorNotFoundError();
+    if (!this.#signer) throw new Error("Signer is required");
 
     if (provider.on) {
       provider.on("accountsChanged", this.onAccountsChanged);
@@ -47,6 +83,16 @@ export class SmartAccountConnector extends Connector<SmartAccountProvider, Opts>
     }
 
     this.emit("message", { type: "connecting" });
+
+    provider.connect((rpcClient) => {
+      return new SimpleSmartContractAccount({
+        owner: this.#signer!,
+        factoryAddress: this.options.factoryAddress,
+        entryPointAddress: this.options.entryPointAddress,
+        chain: this.chains[0],
+        rpcClient,
+      });
+    });
 
     const account = await this.getAccount();
     const id = await this.getChainId();
@@ -68,60 +114,84 @@ export class SmartAccountConnector extends Connector<SmartAccountProvider, Opts>
 
   async getAccount() {
     const provider = await this.getProvider();
-    if (!provider?.account) throw new ConnectorNotFoundError();
-    return await provider.account.getAddress();
+    if (!provider) throw new ConnectorNotFoundError();
+    return await provider.getAddress();
   }
 
   async getChainId() {
-    return this.#chain.id;
+    return this.chains[0].id;
   }
 
   async getProvider() {
     if (!this.#provider) {
-      if (!this.options.privateKey) {
-        throw new ConnectorNotFoundError();
-      }
-
-      const accountSigner = LocalAccountSigner.privateKeyToAccountSigner(
-        this.options.privateKey,
-      );
-
       this.#provider = new SmartAccountProvider(
-        BUNDLER_URL,
-        ENTRYPOINT_ADDRESS as Hex,
-        this.#chain,
-      ).connect(
-        (rpcClient) =>
-          new SimpleSmartContractAccount({
-            owner: accountSigner,
-            entryPointAddress: ENTRYPOINT_ADDRESS as Hex,
-            factoryAddress: SIMPLE_ACCOUNT_FACTORY_ADDRESS as Hex,
-            chain: this.#chain,
-            rpcClient,
-          }),
+        this.options.bundlerUrl,
+        this.options.entryPointAddress,
+        this.chains[0],
       );
+
+      if (this.options.paymasterUrl && this.options.paymasterTokenAddress) {
+        const paymasterClient = createPublicClient({
+          chain: this.chains[0],
+          transport: http(this.options.paymasterUrl),
+        });
+
+        this.#provider = this.#provider.withPaymasterMiddleware({
+          dummyPaymasterDataMiddleware: async (struct) => {
+            struct.callGasLimit = 0n;
+            struct.preVerificationGas = 0n;
+            struct.verificationGasLimit = 0n;
+            struct.paymasterAndData = "0x";
+            return struct;
+          },
+
+          paymasterDataMiddleware: async (struct) => {
+            const userOperation: UserOperationRequest = deepHexlify(
+              await resolveProperties(struct),
+            );
+
+            const overrideGasFields =
+              await paymasterClient.request<SponsorUserOperationRequest>({
+                method: "pm_sponsorUserOperation",
+                params: [
+                  userOperation,
+                  this.options.entryPointAddress,
+                  { type: "erc20token", token: this.options.paymasterTokenAddress! },
+                ],
+              });
+
+            return {
+              ...userOperation,
+              ...overrideGasFields,
+            };
+          },
+        });
+      }
     }
     return this.#provider;
   }
 
-  async getWalletClient(): Promise<WalletClient> {
-    const provider = await this.getProvider();
-    const account = await this.getAccount();
-    if (!provider) throw new Error("provider is required.");
+  async getWalletClient({ chainId }: { chainId?: number } = {}): Promise<WalletClient> {
+    const [provider, account] = await Promise.all([
+      this.getProvider(),
+      this.getAccount(),
+    ]);
+    const chain = this.chains.find((x) => x.id === chainId);
+    if (!provider) throw new Error("Provider is required.");
     return createWalletClient({
       account,
-      chain: this.#chain,
-      transport: http(BUNDLER_URL),
+      chain,
+      transport: custom(provider),
     });
   }
 
+  async setSigner(privateKey: Hex) {
+    this.#signer = LocalAccountSigner.privateKeyToAccountSigner(privateKey);
+    // await this.connect();
+  }
+
   async isAuthorized() {
-    try {
-      const account = await this.getAccount();
-      return !!account;
-    } catch {
-      return false;
-    }
+    return typeof this.#signer !== "undefined";
   }
 
   protected onAccountsChanged(_accounts: string[]) {
