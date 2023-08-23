@@ -6,7 +6,6 @@
     "jsEngine": "hermes",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "automatic",
     "scheme": "aa-wallet",
     "splash": {
       "image": "./assets/splash.png",
@@ -44,6 +43,13 @@
           "ios": {
             "newArchEnabled": false
           }
+        }
+      ],
+      [
+        "expo-navigation-bar",
+        {
+          "position": "absolute",
+          "backgroundColor": "#00000000"
         }
       ]
     ],
