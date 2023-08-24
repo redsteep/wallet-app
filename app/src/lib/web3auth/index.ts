@@ -15,9 +15,10 @@ const web3auth = new Web3Auth(WebBrowser, {
 });
 
 interface Web3AuthState {
-  userInfo?: unknown;
+  hasHydrated: boolean;
   privateKey?: Hex;
   actions: {
+    setHasHydrated: (hasHydrated: boolean) => void;
     loginWith: (providerKey: Hex) => Promise<void>;
     logout: () => Promise<void>;
   };
@@ -27,7 +28,9 @@ export const useWeb3Auth = create<Web3AuthState>()(
   persist(
     (set) =>
       <Web3AuthState>{
+        hasHydrated: false,
         actions: {
+          setHasHydrated: (hasHydrated: boolean) => set({ hasHydrated }),
           loginWith: async (providerKey: string) => {
             try {
               const loginResult = await web3auth.login({
@@ -38,14 +41,12 @@ export const useWeb3Auth = create<Web3AuthState>()(
               if (loginResult.privKey) {
                 set({
                   privateKey: `0x${loginResult.privKey}`,
-                  userInfo: loginResult.userInfo,
                 });
               }
             } catch (error) {
               console.warn(error);
             }
           },
-
           logout: async () => {
             try {
               await web3auth.logout({
@@ -63,6 +64,7 @@ export const useWeb3Auth = create<Web3AuthState>()(
       name: "web3auth-state",
       version: 1.0,
       storage: createJSONStorage(() => persistentZustandStorage),
+      onRehydrateStorage: () => (state) => state?.actions.setHasHydrated(true),
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       partialize: ({ actions, ...rest }) => ({ ...rest }),
     },

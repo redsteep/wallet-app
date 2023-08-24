@@ -62,7 +62,7 @@ export function ReceiveScreen() {
           space="$4"
         >
           <TouchableOpacity onPress={copyAddress}>
-            <Text color="$color10" fontSize="$5" fontWeight="500">
+            <Text color="$color10" fontSize="$5" fontWeight="500" letterSpacing={0.25}>
               {shortenAddress(address, 6)} <Ionicons name="copy-outline" size={16} />
             </Text>
           </TouchableOpacity>

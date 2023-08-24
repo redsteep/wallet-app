@@ -1,14 +1,15 @@
+import { Theme } from "tamagui";
+import { SafeAreaStack } from "~/components/safe-area-stack";
 import { LoginButton } from "~/features/onboarding/components/login-button";
-import { Theme, YStack } from "tamagui";
 
-export function LoginScreen() {
+export function WelcomeScreen() {
   return (
-    <YStack flex={1} backgroundColor="$gray5">
+    <SafeAreaStack backgroundColor="$backgroundStrong">
       <Theme name="blue">
         <LoginButton providerKey="google" />
       </Theme>
 
       <LoginButton providerKey="apple" />
-    </YStack>
+    </SafeAreaStack>
   );
 }
