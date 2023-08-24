@@ -12,7 +12,7 @@ export const ButtonFrame = styled(PanModal.Trigger, {
   userSelect: "none",
 
   padding: "$2.5",
-  space: "$1.5",
+  space: "$2",
 
   hoverStyle: {
     backgroundColor: "$backgroundHover",
@@ -24,7 +24,7 @@ export const ButtonFrame = styled(PanModal.Trigger, {
 
 export const ButtonText = styled(Text, {
   color: "$color",
-  fontSize: "$3",
+  fontSize: "$4",
   fontWeight: "500",
 });
 

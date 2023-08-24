@@ -19,7 +19,7 @@
       "bundleIdentifier": "com.redsteep.wallet",
       "supportsTablet": true,
       "infoPlist": {
-        "UIViewControllerBasedStatusBarAppearance": true
+        "CADisableMinimumFrameDurationOnPhone": true
       }
     },
     "android": {

@@ -187,7 +187,7 @@ export function PanModalContentRoot({
     const opacity =
       presentationState.value === PanModalPresentationState.Dismissing ||
       presentationState.value === PanModalPresentationState.Dismissed
-        ? interpolate(transitionProgress.value, [0.1, 0.0], [1.0, 0.0])
+        ? interpolate(transitionProgress.value, [0.15, 0.05], [1.0, 0.0])
         : 1.0;
 
     return {

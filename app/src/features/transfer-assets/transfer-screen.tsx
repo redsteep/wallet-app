@@ -1,9 +1,10 @@
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useNavigation } from "@react-navigation/native";
 import { PanModal } from "@wallet/pan-modal";
 import { NotificationFeedbackType, notificationAsync } from "expo-haptics";
 import { Controller, useForm } from "react-hook-form";
 import { Linking, Pressable, StyleSheet } from "react-native";
-import { useQueryClient } from "react-query";
 import { Button, Input, Spinner, Text, XStack, YStack } from "tamagui";
 import { isAddress, parseEther, parseUnits } from "viem";
 import { erc20ABI, useContractWrite, useToken } from "wagmi";
@@ -26,6 +27,8 @@ const schema = z.object({
 
 // TODO: Clean this up and introduce transaction batching + bring back ETH transfers
 export function TransferScreen({ route }: HomeStackScreenProps<"Transfer">) {
+  const navigation = useNavigation();
+
   const { data: tokenData } = useToken({
     address: route.params.tokenAddress,
     staleTime: Infinity,
@@ -74,10 +77,14 @@ export function TransferScreen({ route }: HomeStackScreenProps<"Transfer">) {
         backgroundColor="$background"
         paddingHorizontal="$4"
       >
-        <XStack height="$5" alignItems="center">
+        <XStack justifyContent="space-between" alignItems="center">
           <Text fontSize="$8" fontWeight="700">
-            Transfer
+            Send
           </Text>
+
+          <Pressable onPress={() => navigation.goBack()}>
+            <Ionicons name="close" size={28} />
+          </Pressable>
         </XStack>
 
         {transferData?.hash && (
