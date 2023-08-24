@@ -184,6 +184,12 @@ export function PanModalContentRoot({
       Extrapolate.CLAMP,
     );
 
+    const opacity =
+      presentationState.value === PanModalPresentationState.Dismissing ||
+      presentationState.value === PanModalPresentationState.Dismissed
+        ? interpolate(transitionProgress.value, [0.1, 0.0], [1.0, 0.0])
+        : 1.0;
+
     return {
       width: layout.width.value,
       height: layout.height.value,
@@ -196,6 +202,7 @@ export function PanModalContentRoot({
         { translateY: translation.y.value * scale },
       ],
 
+      opacity,
       borderRadius: borderRadius.value,
       borderCurve: "continuous",
       overflow: "hidden",

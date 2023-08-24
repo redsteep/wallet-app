@@ -71,7 +71,7 @@ export function TransferScreen({ route }: HomeStackScreenProps<"Transfer">) {
     <PanModal.Content>
       <SafeAreaStack
         justifyContent="space-between"
-        backgroundColor="$backgroundStrong"
+        backgroundColor="$background"
         paddingHorizontal="$4"
       >
         <XStack height="$5" alignItems="center">

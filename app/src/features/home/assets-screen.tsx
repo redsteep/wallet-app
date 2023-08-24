@@ -6,6 +6,7 @@ import { ScrollView, Text, XStack, YStack } from "tamagui";
 import { useAccount } from "wagmi";
 import { SafeAreaStack } from "~/components/safe-area-stack";
 import { Header } from "~/features/home/components/header";
+import { LeadingButtonRow } from "~/features/home/components/leading-button-row";
 import { TokenRow } from "~/features/home/components/token-row";
 import { LoginScreen } from "~/features/onboarding/login-screen";
 
@@ -21,41 +22,41 @@ export function AssetsScreen() {
         flexDirection="column"
         justifyContent="space-between"
         backgroundColor="$backgroundStrong"
-        paddingHorizontal="$4"
+        padding="$3"
+        space="$2"
       >
-        <YStack flex={1}>
-          <Header accountAddress={address} />
+        <Header />
 
-          <XStack space="$3">
-            <Pressable>
-              <Text fontSize="$5" fontWeight="600">
-                Tokens
-              </Text>
-            </Pressable>
+        {/* <XStack space="$3">
+          <Pressable>
+            <Text fontSize="$5" fontWeight="600">
+              Tokens
+            </Text>
+          </Pressable>
 
-            <Pressable>
-              <Text fontSize="$5" fontWeight="600" color="$gray10">
-                Collectibles
-              </Text>
-            </Pressable>
-          </XStack>
+          <Pressable>
+            <Text fontSize="$5" fontWeight="600" color="$gray10">
+              Collectibles
+            </Text>
+          </Pressable>
+        </XStack> */}
 
-          <ScrollView>
-            <YStack paddingVertical="$4" space="$3">
-              <TokenRow accountAddress={address} tokenName="Ethereum" />
-              <TokenRow
-                accountAddress={address}
-                tokenAddress="0x3870419Ba2BBf0127060bCB37f69A1b1C090992B"
-                tokenName="Stackup Token"
-              />
-            </YStack>
-          </ScrollView>
-        </YStack>
+        <ScrollView marginTop="$2">
+          <YStack space="$4">
+            <TokenRow tokenName="Ethereum" />
+            <TokenRow
+              tokenName="Stackup Token"
+              token="0x3870419Ba2BBf0127060bCB37f69A1b1C090992B"
+            />
+          </YStack>
+        </ScrollView>
 
-        <BottomSheet ref={bottomSheetRef} snapPoints={snapPoints}>
-          <LoginScreen />
-        </BottomSheet>
+        <LeadingButtonRow />
       </SafeAreaStack>
+
+      <BottomSheet ref={bottomSheetRef} snapPoints={snapPoints} enablePanDownToClose>
+        <LoginScreen />
+      </BottomSheet>
     </PanModal.Offscreen>
   );
 }

@@ -29,8 +29,7 @@ export function HomeNavigator() {
         <Stack.Screen name="Assets" component={AssetsScreen} />
         <Stack.Group
           screenOptions={{
-            animation: "fade",
-            animationDuration: 0,
+            animation: "none",
             presentation: "transparentModal",
           }}
         >

@@ -1,31 +1,25 @@
+import { PanModal } from "@wallet/pan-modal";
+import * as dnum from "dnum";
 import { Stack, Text, XStack, YStack } from "tamagui";
 import type { Address } from "viem";
-import { useBalance } from "wagmi";
-import * as dnum from "dnum";
-import { PanModal } from "@wallet/pan-modal";
-import { useMemo } from "react";
+import { useAccount, useBalance } from "wagmi";
 
 interface TokenRowProps {
-  accountAddress?: Address;
-  tokenAddress?: Address;
+  token?: Address;
   tokenName: string;
 }
 
-export function TokenRow({ accountAddress, tokenAddress, tokenName }: TokenRowProps) {
-  const { data } = useBalance({
-    address: accountAddress,
-    token: tokenAddress,
-    watch: true,
-  });
+export function TokenRow({ token, tokenName }: TokenRowProps) {
+  const { address } = useAccount();
+  const { data } = useBalance({ address, token, watch: true });
 
-  const formattedBalance = useMemo(
-    () => dnum.format([data?.value ?? 0n, data?.decimals ?? 18], { digits: 4 }),
-    [data],
-  );
+  const formattedBalance = dnum.format([data?.value ?? 0n, data?.decimals ?? 18], {
+    digits: 4,
+  });
 
   return (
     <PanModal.Trigger
-      destination={{ name: "Transfer", params: { tokenAddress } }}
+      destination={{ name: "Transfer", params: { tokenAddress: token } }}
       style={{ borderRadius: 16, overflow: "hidden" }}
     >
       <XStack alignItems="center" space="$2.5">
