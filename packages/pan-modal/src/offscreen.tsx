@@ -60,7 +60,7 @@ export function PanModalOffscreen({ disableScaling, children }: PanModalOffscree
   return (
     <>
       <Animated.View
-        style={[StyleSheet.absoluteFill, { backgroundColor: "#000" }]}
+        style={[StyleSheet.absoluteFill, { backgroundColor: "white" }]}
         pointerEvents="none"
       />
       <Animated.View style={[StyleSheet.absoluteFill, animatedStyle]}>

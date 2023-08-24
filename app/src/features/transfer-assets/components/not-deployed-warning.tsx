@@ -37,7 +37,7 @@ export function NotDeployedWarning() {
         Contract for this account is not deployed
       </Text>
 
-      <Text fontSize="$4" color="white">
+      <Text fontSize="$4" color="$color">
         Gas price for your first Ethereum transaction will be ~50% higher than usual to
         account for contract deployment fees.
       </Text>
