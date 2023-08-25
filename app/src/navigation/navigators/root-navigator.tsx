@@ -3,17 +3,20 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
-import { useWeb3Auth } from "~/lib/web3auth";
+import { useUserPreferences } from "~/lib/user-preferences";
 import {
   HomeNavigator,
   type HomeStackParamList,
 } from "~/navigation/navigators/home-navigator";
-import { OnboardingNavigator } from "~/navigation/navigators/onboarding-navigator";
+import {
+  OnboardingNavigator,
+  type OnboardingStackParamList,
+} from "~/navigation/navigators/onboarding-navigator";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export type RootStackParamList = {
-  Onboarding: undefined;
+  Onboarding: NavigatorScreenParams<OnboardingStackParamList>;
   Home: NavigatorScreenParams<HomeStackParamList>;
 };
 
@@ -21,8 +24,10 @@ export type RootStackScreenProps<T extends keyof RootStackParamList> =
   NativeStackScreenProps<RootStackParamList, T>;
 
 export function RootNavigator() {
-  const hasHydrated = useWeb3Auth((state) => state.hasHydrated);
-  const isSignedIn = useWeb3Auth((state) => typeof state.privateKey !== "undefined");
+  const hasHydrated = useUserPreferences((state) => state.hasHydrated);
+  const hasFinishedOnboarding = useUserPreferences(
+    (state) => state.hasFinishedOnboarding,
+  );
 
   useEffect(() => {
     hasHydrated && SplashScreen.hideAsync().catch(() => {});
@@ -30,7 +35,7 @@ export function RootNavigator() {
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {!isSignedIn ? (
+      {!hasFinishedOnboarding ? (
         <Stack.Screen
           name="Onboarding"
           component={OnboardingNavigator}

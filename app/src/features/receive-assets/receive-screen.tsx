@@ -4,17 +4,17 @@ import { useToastController } from "@tamagui/toast";
 import { PanModal } from "@wallet/pan-modal";
 import * as Clipboard from "expo-clipboard";
 import { Dimensions, Pressable, Share, TouchableOpacity } from "react-native";
-import { Button, Text, XStack, YStack, useTheme } from "tamagui";
+import { Button, Text, Theme, XStack, YStack } from "tamagui";
 import { useAccount } from "wagmi";
 import { SafeAreaStack } from "~/components/safe-area-stack";
 import { QrCode } from "~/features/receive-assets/components/qr-code";
 import { shortenAddress } from "~/utils/shorten-address";
 
 export function ReceiveScreen() {
-  const theme = useTheme();
+  const { address } = useAccount();
+
   const toast = useToastController();
   const navigation = useNavigation();
-  const { address } = useAccount();
 
   if (!address) {
     return null;
@@ -59,7 +59,7 @@ export function ReceiveScreen() {
           justifyContent="center"
           alignItems="center"
           padding="$3"
-          space="$4"
+          space="$5"
         >
           <TouchableOpacity onPress={copyAddress}>
             <Text color="$color10" fontSize="$5" fontWeight="500" letterSpacing={0.25}>
@@ -67,16 +67,11 @@ export function ReceiveScreen() {
             </Text>
           </TouchableOpacity>
 
-          <XStack
-            padding="$4"
-            backgroundColor="$background"
-            borderRadius="$8"
-            elevation={16}
-          >
+          <XStack padding="$4" backgroundColor="white" borderRadius="$8" elevation={16}>
             <QrCode
               value={address}
-              size={Dimensions.get("window").width * 0.75}
-              backgroundColor={theme.background.get()}
+              size={Dimensions.get("window").width * 0.8}
+              backgroundColor="white"
             />
           </XStack>
 
@@ -86,14 +81,16 @@ export function ReceiveScreen() {
           </Text>
         </YStack>
 
-        <Button
-          onPress={shareAddress}
-          marginHorizontal="$10"
-          backgroundColor="$color5"
-          borderRadius="$8"
-        >
-          <Button.Text fontWeight="500">Share Address</Button.Text>
-        </Button>
+        <Theme inverse>
+          <Button
+            onPress={shareAddress}
+            backgroundColor="$backgroundStrong"
+            marginHorizontal="$8"
+            borderRadius="$8"
+          >
+            <Button.Text fontWeight="600">Share Address</Button.Text>
+          </Button>
+        </Theme>
       </SafeAreaStack>
     </PanModal.Content>
   );
