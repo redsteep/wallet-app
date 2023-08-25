@@ -61,7 +61,9 @@ export function EnableBiometricsFlow({ goNext }: { goNext: () => void }) {
 
       <YStack space="$3">
         <Button size="$4" onPress={goNext} chromeless>
-          <Button.Text fontWeight="500">Enable Later</Button.Text>
+          <Button.Text fontSize="$6" fontWeight="500">
+            Enable Later
+          </Button.Text>
         </Button>
 
         <Theme name="dark">
