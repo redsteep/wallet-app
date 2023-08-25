@@ -34,10 +34,9 @@ export const ButtonIcon = styled(Stack, {
   alignItems: "center",
   justifyContent: "center",
   borderRadius: "$10",
-  overflow: "hidden",
 });
 
-export const VerticalButton = withStaticProperties(ButtonFrame, {
+export const ActionButton = withStaticProperties(ButtonFrame, {
   Text: ButtonText,
   Icon: ButtonIcon,
 });

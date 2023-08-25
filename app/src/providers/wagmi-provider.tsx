@@ -36,7 +36,6 @@ const wagmiConfig = createConfig({
 
 export function WagmiProvider({ children }: React.PropsWithChildren) {
   const privateKey = useWeb3Auth((state) => state.privateKey);
-  console.log(privateKey);
 
   useEffect(() => {
     if (typeof privateKey === "undefined") {

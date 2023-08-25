@@ -1,5 +1,4 @@
 import { PanModal } from "@wallet/pan-modal";
-import * as dnum from "dnum";
 import { Stack, Text, XStack, YStack } from "tamagui";
 import type { Address } from "viem";
 import { useAccount, useBalance } from "wagmi";
@@ -13,9 +12,7 @@ export function TokenRow({ token, tokenName }: TokenRowProps) {
   const { address } = useAccount();
   const { data } = useBalance({ address, token, watch: true });
 
-  // const formattedBalance = dnum.format([data?.value ?? 0n, data?.decimals ?? 18], {
-  //   digits: 4,
-  // });
+  const formattedBalance = Number(data?.formatted).toFixed(4);
 
   return (
     <PanModal.Trigger destination={{ name: "Transfer", params: { tokenAddress: token } }}>
@@ -27,8 +24,9 @@ export function TokenRow({ token, tokenName }: TokenRowProps) {
             <Text fontSize="$6" fontWeight="600">
               {tokenName}
             </Text>
+
             <Text color="$color10">
-              {data ? `${data.formatted} ${data.symbol}` : "Loading..."}
+              {data ? `${formattedBalance} ${data.symbol}` : "Loading..."}
             </Text>
           </YStack>
         </XStack>

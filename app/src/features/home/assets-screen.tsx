@@ -1,13 +1,11 @@
-import BottomSheet from "@gorhom/bottom-sheet";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { PanModal } from "@wallet/pan-modal";
-import { useMemo, useRef } from "react";
 import { Pressable, TouchableOpacity } from "react-native";
-import { Grid, ScrollView, Stack, Text, XStack, YStack } from "tamagui";
+import { ScrollView, Text, XStack, YStack } from "tamagui";
 import { useAccount } from "wagmi";
 import { SafeAreaStack } from "~/components/safe-area-stack";
-import { LeadingButtonRow } from "~/features/home/components/leading-button-row";
+import { ActionButton } from "~/features/home/components/action-button";
 import { TokenRow } from "~/features/home/components/token-row";
-import { LoginScreen } from "~/features/onboarding/login-screen";
 import { useWeb3Auth } from "~/lib/web3auth";
 import { shortenAddress } from "~/utils/shorten-address";
 
@@ -16,9 +14,6 @@ export function AssetsScreen() {
   const { logout } = useWeb3Auth((state) => state.actions);
 
   const formattedAddress = address ? shortenAddress(address) : "Loading...";
-
-  const bottomSheetRef = useRef<BottomSheet>(null);
-  const snapPoints = useMemo(() => ["25%", "50%"], []);
 
   return (
     <PanModal.Offscreen>
@@ -59,18 +54,29 @@ export function AssetsScreen() {
           </YStack>
         </ScrollView>
 
-        <LeadingButtonRow />
+        <XStack alignItems="center" justifyContent="space-between" space="$3">
+          <ActionButton destination={{ name: "Receive" }}>
+            <ActionButton.Icon backgroundColor="#49CF57">
+              <Ionicons name="arrow-down" color="white" size={24} />
+            </ActionButton.Icon>
+            <ActionButton.Text>Receive</ActionButton.Text>
+          </ActionButton>
+
+          <ActionButton destination={{ name: "Transfer" }}>
+            <ActionButton.Icon backgroundColor="#119BFF">
+              <Ionicons name="arrow-up" color="white" size={24} />
+            </ActionButton.Icon>
+            <ActionButton.Text>Send</ActionButton.Text>
+          </ActionButton>
+
+          <ActionButton destination={{ name: "Transfer" }}>
+            <ActionButton.Icon backgroundColor="#B3B3B3">
+              <Ionicons name="swap-vertical" color="white" size={24} />
+            </ActionButton.Icon>
+            <ActionButton.Text>Swap</ActionButton.Text>
+          </ActionButton>
+        </XStack>
       </SafeAreaStack>
-
-      <Grid columns={3}>
-        <Stack backgroundColor="$color10" />
-        <Stack backgroundColor="$color10" />
-        <Stack backgroundColor="$color10" />
-      </Grid>
-
-      <BottomSheet ref={bottomSheetRef} snapPoints={snapPoints} enablePanDownToClose>
-        <LoginScreen />
-      </BottomSheet>
     </PanModal.Offscreen>
   );
 }

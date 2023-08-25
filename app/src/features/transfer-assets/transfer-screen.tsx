@@ -30,7 +30,7 @@ export function TransferScreen({ route }: HomeStackScreenProps<"Transfer">) {
   const navigation = useNavigation();
 
   const { data: tokenData } = useToken({
-    address: route.params.tokenAddress,
+    address: route.params?.tokenAddress,
     staleTime: Infinity,
   });
 
