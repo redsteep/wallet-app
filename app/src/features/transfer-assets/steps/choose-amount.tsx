@@ -1,11 +1,6 @@
 import { ImpactFeedbackStyle, impactAsync } from "expo-haptics";
 import { useDeferredValue, useState } from "react";
-import Animated, {
-  FadeInDown,
-  FadeInUp,
-  FadeOutDown,
-  FadeOutUp,
-} from "react-native-reanimated";
+import Animated, { FadeInDown, FadeOutDown } from "react-native-reanimated";
 import { Button, Text, Theme, View, XStack, YStack } from "tamagui";
 import { P, match } from "ts-pattern";
 import { parseUnits } from "viem";

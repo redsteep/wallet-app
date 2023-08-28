@@ -1,13 +1,10 @@
-import {
-  ImpactFeedbackStyle,
-  NotificationFeedbackType,
-  impactAsync,
-  notificationAsync,
-} from "expo-haptics";
-import { useState } from "react";
-import { Button, Spinner, Text, Theme, View, XStack, YStack } from "tamagui";
-import { P, match } from "ts-pattern";
-import { formatUnits, parseUnits } from "viem";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { useNavigation } from "@react-navigation/native";
+import { NotificationFeedbackType, notificationAsync } from "expo-haptics";
+import { authenticateAsync } from "expo-local-authentication";
+import { useMutation } from "react-query";
+import { Button, Spinner, Text, Theme, XStack, YStack } from "tamagui";
+import { formatUnits } from "viem";
 import {
   erc20ABI,
   useAccount,
@@ -15,18 +12,9 @@ import {
   useContractWrite,
   useSendTransaction,
 } from "wagmi";
-import { TokenRow } from "~/features/assets/components/token-row";
 import { useTransferContext } from "~/features/transfer-assets/context";
-import { shortenAddress } from "~/utils/shorten-address";
-import Ionicons from "@expo/vector-icons/Ionicons";
 import { useUserPreferences } from "~/lib/user-preferences";
-import { useMutation } from "react-query";
-import {
-  AuthenticationType,
-  authenticateAsync,
-  supportedAuthenticationTypesAsync,
-} from "expo-local-authentication";
-import { useNavigation } from "@react-navigation/native";
+import { shortenAddress } from "~/utils/shorten-address";
 
 export function ConfirmTransactionStep() {
   const navigation = useNavigation();
@@ -58,11 +46,7 @@ export function ConfirmTransactionStep() {
     functionName: "transfer",
   });
 
-  const {
-    data: txData,
-    isLoading,
-    mutate,
-  } = useMutation(
+  const { isLoading, mutate } = useMutation(
     async () => {
       if (!recipientAddress || !transferAsset || !transferValue) {
         return;
