@@ -1,6 +1,8 @@
+import { Ionicons } from "@expo/vector-icons";
 import { type NavigatorScreenParams } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import { useUserPreferences } from "~/lib/user-preferences";
@@ -24,18 +26,20 @@ export type RootStackScreenProps<T extends keyof RootStackParamList> =
   NativeStackScreenProps<RootStackParamList, T>;
 
 export function RootNavigator() {
+  const [fontsLoaded] = useFonts(Ionicons.font);
+
   const hasHydrated = useUserPreferences((state) => state.hasHydrated);
-  const hasFinishedOnboarding = useUserPreferences(
-    (state) => state.hasFinishedOnboarding,
-  );
+  const hasOnboarded = useUserPreferences((state) => state.hasFinishedOnboarding);
 
   useEffect(() => {
-    hasHydrated && SplashScreen.hideAsync().catch(() => {});
-  }, [hasHydrated]);
+    if (hasHydrated && fontsLoaded) {
+      SplashScreen.hideAsync().catch(() => {});
+    }
+  }, [hasHydrated, fontsLoaded]);
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {!hasFinishedOnboarding ? (
+      {!hasOnboarded ? (
         <Stack.Screen
           name="Onboarding"
           component={OnboardingNavigator}

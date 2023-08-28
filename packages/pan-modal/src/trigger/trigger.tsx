@@ -1,4 +1,5 @@
-import { useId, useMemo, useRef, type ElementRef, forwardRef } from "react";
+import { type Route } from "@react-navigation/native";
+import { forwardRef, useId, useMemo, useRef, type ElementRef } from "react";
 import { StyleSheet, type ViewProps } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
@@ -15,20 +16,17 @@ import {
   type PanModalTriggerState,
 } from "../context";
 import { PanModalTriggerContext } from "./context";
-import { type Route, useNavigation } from "@react-navigation/native";
 
-interface PanModalTriggerRootProps<T extends string>
-  extends React.PropsWithChildren<ViewProps> {
-  destination: Omit<Route<T>, "key">;
+interface PanModalTriggerRootProps extends React.PropsWithChildren<ViewProps> {
+  onTriggerPress?: () => void;
 }
 
 export const PanModalTriggerRoot = forwardRef(
-  <T extends string>(
-    { destination, style, children, ...props }: PanModalTriggerRootProps<T>,
+  (
+    { onTriggerPress, style, children, ...props }: PanModalTriggerRootProps,
     _: unknown,
   ) => {
     const id = useId();
-    const navigation = useNavigation();
 
     const { triggerState, presentationState } = usePanModalContext();
 
@@ -55,7 +53,7 @@ export const PanModalTriggerRoot = forwardRef(
       }
 
       triggerState.value = newTriggerState;
-      requestAnimationFrame(() => navigation.navigate(destination as never));
+      requestAnimationFrame(() => onTriggerPress?.());
     };
 
     const tapGesture = useMemo(() => {

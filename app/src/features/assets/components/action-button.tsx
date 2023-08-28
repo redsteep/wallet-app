@@ -1,7 +1,6 @@
 import { Stack, Text, styled, withStaticProperties } from "@tamagui/web";
 import { PanModal } from "@wallet/pan-modal";
 
-// @ts-expect-error
 export const ButtonFrame = styled(PanModal.Trigger, {
   flex: 1,
   flexDirection: "column",
