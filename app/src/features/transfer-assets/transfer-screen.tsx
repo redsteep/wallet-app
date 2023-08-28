@@ -1,169 +1,122 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useNavigation } from "@react-navigation/native";
 import { PanModal } from "@wallet/pan-modal";
-import { NotificationFeedbackType, notificationAsync } from "expo-haptics";
-import { Controller, useForm } from "react-hook-form";
-import { Linking, Pressable, StyleSheet } from "react-native";
-import { Button, Input, Spinner, Text, XStack, YStack } from "tamagui";
-import { isAddress, parseEther, parseUnits } from "viem";
-import { erc20ABI, useContractWrite, useToken } from "wagmi";
-import { z } from "zod";
+import { useState } from "react";
+import { Pressable } from "react-native";
+import Animated, {
+  FadeInLeft,
+  FadeInRight,
+  FadeOutLeft,
+  FadeOutRight,
+} from "react-native-reanimated";
+import { Text, View, XStack } from "tamagui";
+import { P, match } from "ts-pattern";
+import { Address } from "viem";
 import { SafeAreaStack } from "~/components/safe-area-stack";
-import { NotDeployedWarning } from "~/features/transfer-assets/components/not-deployed-warning";
+import { Asset } from "~/features/assets/assets";
+import { RecipientSelector } from "~/features/transfer-assets/components/recipient-selector";
+import { TransferContext } from "~/features/transfer-assets/context";
+import { ChooseAmountStep } from "~/features/transfer-assets/steps/choose-amount";
+import { ChooseAssetStep } from "~/features/transfer-assets/steps/choose-asset";
+import { ConfirmTransactionStep } from "~/features/transfer-assets/steps/confirm-transaction";
 import type { HomeStackScreenProps } from "~/navigation/navigators/home-navigator";
 
-const schema = z.object({
-  accountAddress: z.string().refine(isAddress),
-  transferAmount: z.string().refine((value) => {
-    try {
-      parseEther(value);
-      return true;
-    } catch {
-      return false;
-    }
-  }),
-});
+export function TransferScreen({ navigation, route }: HomeStackScreenProps<"Transfer">) {
+  const [recipientAddress, setRecipientAddress] = useState<Address>();
+  const [transferAsset, setTransferAsset] = useState<Asset>();
+  const [transferValue, setTransferValue] = useState<bigint>();
 
-// TODO: Clean this up and introduce transaction batching + bring back ETH transfers
-export function TransferScreen({ route }: HomeStackScreenProps<"Transfer">) {
-  const navigation = useNavigation();
+  // const { presentationState } = usePanModalContext();
 
-  const { data: tokenData } = useToken({
-    address: route.params?.tokenAddress,
-    staleTime: Infinity,
-  });
+  // const { data: tokenData } = useToken({
+  //   address: route.params?.tokenAddress,
+  //   staleTime: Infinity,
+  // });
 
-  const {
-    data: approveData,
-    isLoading: isApproveLoading,
-    writeAsync: writeApproveAsync,
-  } = useContractWrite({
-    abi: erc20ABI,
-    address: "0x3870419Ba2BBf0127060bCB37f69A1b1C090992B",
-    functionName: "approve",
-  });
+  // const {
+  //   data: approveData,
+  //   isLoading: isApproveLoading,
+  //   writeAsync: writeApproveAsync,
+  // } = useContractWrite({
+  //   abi: erc20ABI,
+  //   address: "0x3870419Ba2BBf0127060bCB37f69A1b1C090992B",
+  //   functionName: "approve",
+  // });
 
-  const {
-    data: transferData,
-    isLoading: isLoadingTransfer,
-    writeAsync: writeTransferAsync,
-  } = useContractWrite({
-    abi: erc20ABI,
-    address: "0x3870419Ba2BBf0127060bCB37f69A1b1C090992B",
-    functionName: "transfer",
-  });
+  // const {
+  //   data: transferData,
+  //   isLoading: isLoadingTransfer,
+  //   writeAsync: writeTransferAsync,
+  // } = useContractWrite({
+  //   abi: erc20ABI,
+  //   address: "0x3870419Ba2BBf0127060bCB37f69A1b1C090992B",
+  //   functionName: "transfer",
+  // });
 
-  const { formState, handleSubmit, control } = useForm<z.infer<typeof schema>>({
-    resolver: zodResolver(schema),
-    mode: "all",
-  });
+  // const recipient = watch("accountAddress");
+  // const showPasteButton = !recipient || recipient.length <= 0;
 
-  const onSubmit = handleSubmit(
-    async (values) => {
-      const paymasterAddress = "0xE93ECa6595fe94091DC1af46aaC2A8b5D7990770";
-      const transferValue = parseUnits(values.transferAmount, 6);
+  // const onSubmit = handleSubmit(
+  //   async (values) => {
+  //     const paymasterAddress = "0xE93ECa6595fe94091DC1af46aaC2A8b5D7990770";
+  //     const transferValue = parseUnits(values.transferAmount, 6);
 
-      await writeApproveAsync({ args: [paymasterAddress, transferValue * 3n] });
-      await writeTransferAsync({ args: [values.accountAddress, transferValue] });
-    },
-    () => notificationAsync(NotificationFeedbackType.Error),
-  );
+  //     await writeApproveAsync({ args: [paymasterAddress, transferValue * 3n] });
+  //     await writeTransferAsync({ args: [values.accountAddress, transferValue] });
+  //   },
+  //   () => notificationAsync(NotificationFeedbackType.Error),
+  // );
 
   return (
-    <PanModal.Content>
-      <SafeAreaStack
-        justifyContent="space-between"
-        backgroundColor="$background"
-        paddingHorizontal="$4"
-      >
-        <XStack justifyContent="space-between" alignItems="center">
-          <Text fontSize="$8" fontWeight="700">
-            Send
-          </Text>
-
-          <Pressable onPress={() => navigation.goBack()}>
-            <Ionicons name="close" size={28} />
-          </Pressable>
-        </XStack>
-
-        {transferData?.hash && (
-          <YStack
-            paddingVertical="$3"
-            paddingHorizontal="$3"
-            backgroundColor="$green2"
-            borderWidth={StyleSheet.hairlineWidth}
-            borderColor="$green6"
-            borderRadius="$6"
-            space="$2"
-          >
-            <Text color="$green10" fontSize="$6" fontWeight="600">
-              Successful Transaction
+    <TransferContext.Provider
+      value={{
+        recipientAddress,
+        transferAsset,
+        transferValue,
+        actions: {
+          setRecipientAddress,
+          setTransferAsset,
+          setTransferValue,
+        },
+      }}
+    >
+      <PanModal.Content>
+        <SafeAreaStack backgroundColor="$background" padding="$4" space="$4">
+          <XStack justifyContent="space-between" alignItems="center">
+            <Text fontSize="$8" fontWeight="700">
+              Send
             </Text>
-            <Pressable
-              onPress={() =>
-                Linking.openURL(`https://sepolia.etherscan.io/tx/${transferData.hash}`)
-              }
-            >
-              <Text fontSize="$4" color="$green8">
-                Hash: {transferData.hash}
-              </Text>
+
+            <Pressable onPress={() => navigation.goBack()}>
+              <Ionicons name="close" size={28} />
             </Pressable>
-          </YStack>
-        )}
+          </XStack>
 
-        <YStack space="$2">
-          <Controller
-            control={control}
-            name="accountAddress"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <Input
-                size="$5"
-                theme={formState.errors.accountAddress ? "red" : "dark"}
-                placeholder="Address"
-                inputMode="text"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-              />
-            )}
-          />
+          <RecipientSelector />
 
-          <Controller
-            control={control}
-            name="transferAmount"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <Input
-                size="$5"
-                theme={formState.errors.transferAmount ? "red" : "dark"}
-                placeholder={`${tokenData?.symbol ?? "ETH"} amount`}
-                inputMode="decimal"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-              />
-            )}
-          />
-
-          <Button
-            size="$5"
-            opacity={formState.isValid ? 1.0 : 0.75}
-            disabled={!formState.isValid}
-            onPress={onSubmit}
+          <Animated.View
+            key={`${recipientAddress}${transferAsset}${transferValue}`}
+            style={{ flex: 1 }}
+            entering={FadeInRight.springify()
+              .mass(0.15)
+              .damping(8)
+              .stiffness(60)
+              .overshootClamping(1)}
+            exiting={FadeOutLeft.springify()
+              .mass(0.15)
+              .damping(8)
+              .stiffness(60)
+              .overshootClamping(1)}
           >
-            {(isApproveLoading || isLoadingTransfer) && (
-              <Button.Icon scaleIcon={1.25}>
-                <Spinner />
-              </Button.Icon>
-            )}
-            <Button.Text fontWeight="600">Transfer</Button.Text>
-          </Button>
-        </YStack>
-
-        <YStack paddingVertical="$4">
-          <NotDeployedWarning />
-        </YStack>
-      </SafeAreaStack>
-    </PanModal.Content>
+            {match([recipientAddress, transferAsset, transferValue])
+              .with([P.nullish, P.any, P.any], () => null)
+              .with([P.any, P.nullish, P.any], () => <ChooseAssetStep />)
+              .with([P.any, P.any, P.nullish], () => <ChooseAmountStep />)
+              .otherwise(() => (
+                <ConfirmTransactionStep />
+              ))}
+          </Animated.View>
+        </SafeAreaStack>
+      </PanModal.Content>
+    </TransferContext.Provider>
   );
 }

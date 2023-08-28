@@ -1,7 +1,7 @@
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { ImpactFeedbackStyle, impactAsync } from "expo-haptics";
 import { useCallback, useEffect, useMemo } from "react";
-import { View, type ViewProps } from "react-native";
+import { StyleSheet, View, type ViewProps } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   Extrapolate,
@@ -115,6 +115,11 @@ export function PanModalContentRoot({
     },
     (currentValue) => {
       if (
+        presentationState.value === PanModalPresentationState.Presenting &&
+        currentValue >= 1.0
+      ) {
+        presentationState.value = PanModalPresentationState.Presented;
+      } else if (
         presentationState.value === PanModalPresentationState.Dismissing &&
         currentValue < 0.001
       ) {
@@ -155,8 +160,6 @@ export function PanModalContentRoot({
       })
       .onFinalize((event) => {
         if (presentationState.value === PanModalPresentationState.Dragging) {
-          presentationState.value = PanModalPresentationState.Presented;
-
           const animationCallback = () => {
             if (translation.x.value == 0.0 && translation.y.value == 0.0) {
               borderRadius.value = withSpring(0.0);
@@ -171,12 +174,19 @@ export function PanModalContentRoot({
             Math.abs(event.translationY) > FLING_LIMIT
           ) {
             runOnJS(dismissModal)();
+          } else {
+            presentationState.value = PanModalPresentationState.Presented;
           }
         }
       });
   }, []);
 
-  const animatedCardStyle = useAnimatedStyle(() => {
+  const animatedBackdropStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(transitionProgress.value, [0.0, 1.0], [0.0, 0.25]),
+    backgroundColor: "black",
+  }));
+
+  const animatedContentStyle = useAnimatedStyle(() => {
     const scale = interpolate(
       Math.abs(translation.x.value) + Math.abs(translation.y.value),
       [0.0, 250.0, 500.0],
@@ -215,12 +225,15 @@ export function PanModalContentRoot({
   };
 
   return (
-    <GestureDetector gesture={panGesture}>
-      <Animated.View style={animatedCardStyle} collapsable={false}>
-        <View style={[style, fixedContainerStyle]} {...props}>
-          {children}
-        </View>
-      </Animated.View>
-    </GestureDetector>
+    <>
+      <Animated.View style={[StyleSheet.absoluteFill, animatedBackdropStyle]} />
+      <GestureDetector gesture={panGesture}>
+        <Animated.View style={animatedContentStyle} collapsable={false}>
+          <View style={[style, fixedContainerStyle]} {...props}>
+            {children}
+          </View>
+        </Animated.View>
+      </GestureDetector>
+    </>
   );
 }

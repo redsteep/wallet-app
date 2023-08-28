@@ -18,16 +18,8 @@ export function PanModalOffscreen({ disableScaling, children }: PanModalOffscree
   const panModalContext = usePanModalContext();
 
   const animatedStyle = useAnimatedStyle(() => {
-    const style = {
-      opacity: interpolate(
-        panModalContext.transitionProgress.value,
-        [0.0, 1.0],
-        [1.0, 0.35],
-      ),
-    };
-
     if (disableScaling) {
-      return style;
+      return {};
     }
 
     const scale = interpolate(
@@ -43,7 +35,7 @@ export function PanModalOffscreen({ disableScaling, children }: PanModalOffscree
       [0.0, 16.0],
     );
 
-    return Object.assign(style, {
+    return {
       ...(withAnchorPoint(
         { transform: [{ scale }] },
         { x: 0.5, y: 1 },
@@ -54,7 +46,7 @@ export function PanModalOffscreen({ disableScaling, children }: PanModalOffscree
       borderTopRightRadius: borderRadius,
       borderCurve: "continuous",
       overflow: "hidden",
-    });
+    };
   });
 
   return (
