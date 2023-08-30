@@ -12,6 +12,7 @@ import {
   useContractWrite,
   useSendTransaction,
 } from "wagmi";
+import { NotDeployedWarning } from "~/features/transfer-assets/components/not-deployed-warning";
 import { useTransferContext } from "~/features/transfer-assets/context";
 import { useUserPreferences } from "~/lib/user-preferences";
 import { shortenAddress } from "~/utils/shorten-address";
@@ -92,7 +93,7 @@ export function ConfirmTransactionStep() {
   );
 
   return (
-    <YStack flex={1} justifyContent="space-between">
+    <YStack flex={1} justifyContent="space-between" space="$4">
       <YStack flex={1} paddingVertical="$8" space="$8">
         <YStack space="$2">
           <Ionicons name="paper-plane" size={28} />
@@ -113,6 +114,8 @@ export function ConfirmTransactionStep() {
           </XStack>
         </YStack>
       </YStack>
+
+      <NotDeployedWarning />
 
       <Theme name="dark">
         <Button

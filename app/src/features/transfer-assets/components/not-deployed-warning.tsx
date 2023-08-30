@@ -1,5 +1,4 @@
 import { SmartAccountProvider } from "@alchemy/aa-core";
-import { StyleSheet } from "react-native";
 import { useQuery } from "react-query";
 import { Text, YStack } from "tamagui";
 import { useAccount } from "wagmi";
@@ -27,14 +26,13 @@ export function NotDeployedWarning() {
     <YStack
       paddingVertical="$3"
       paddingHorizontal="$3"
-      backgroundColor="$red2"
-      borderWidth={StyleSheet.hairlineWidth}
+      backgroundColor="$red4"
       borderColor="$red10"
       borderRadius="$6"
       space="$2"
     >
       <Text color="$red10" fontSize="$5" fontWeight="600">
-        Contract for this account is not deployed
+        Beware of high gas fees
       </Text>
 
       <Text fontSize="$4" color="$color">

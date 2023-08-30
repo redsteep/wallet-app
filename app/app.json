@@ -41,7 +41,7 @@
             "newArchEnabled": false
           },
           "ios": {
-            "newArchEnabled": false
+            "newArchEnabled": true
           }
         }
       ],

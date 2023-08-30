@@ -12,8 +12,8 @@ import Animated, {
   FadeInRight,
   FadeInUp,
   FadeOut,
-  FadeOutDown,
   FadeOutLeft,
+  FadeOutUp,
   Layout,
   runOnJS,
   useAnimatedReaction,
@@ -180,7 +180,7 @@ export function RecipientSelector() {
                     .damping(8)
                     .stiffness(80)
                     .overshootClamping(1)}
-                  exiting={FadeOutDown.springify()
+                  exiting={FadeOutUp.springify()
                     .mass(0.15)
                     .damping(8)
                     .stiffness(80)
