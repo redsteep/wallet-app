@@ -31,11 +31,11 @@ export function NotDeployedWarning() {
       borderRadius="$6"
       space="$2"
     >
-      <Text color="$red10" fontSize="$5" fontWeight="600">
+      <Text color="$red10" fontSize="$6" fontWeight="600">
         Beware of high gas fees
       </Text>
 
-      <Text fontSize="$4" color="$color">
+      <Text fontSize="$5" color="$color">
         Gas price for your first Ethereum transaction will be ~50% higher than usual to
         account for contract deployment fees.
       </Text>

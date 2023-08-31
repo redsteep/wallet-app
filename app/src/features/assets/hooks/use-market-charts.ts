@@ -14,7 +14,7 @@ export function useMarketChart({
   againstCurrency?: string;
 }) {
   return useQuery(
-    ["market-charts", coinGeckoId, againstCurrency],
+    ["market-charts", coinGeckoId, days, againstCurrency],
     async ({ signal }) => {
       const url = new URL(
         `https://api.coingecko.com/api/v3/coins/${coinGeckoId}/market_chart`,

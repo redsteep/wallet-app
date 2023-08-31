@@ -43,7 +43,7 @@ export function AssetsScreen({ navigation }: HomeStackScreenProps<"Assets">) {
       >
         <XStack justifyContent="space-between" alignItems="center">
           <YStack>
-            <Text color="$color10" fontSize="$6">
+            <Text color="$color10" fontSize="$6" letterSpacing={0.25}>
               {formattedAddress}
             </Text>
 

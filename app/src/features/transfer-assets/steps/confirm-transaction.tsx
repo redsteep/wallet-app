@@ -1,5 +1,6 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
+import { useToastController } from "@tamagui/toast";
 import { NotificationFeedbackType, notificationAsync } from "expo-haptics";
 import { authenticateAsync } from "expo-local-authentication";
 import { useMutation } from "react-query";
@@ -19,6 +20,7 @@ import { shortenAddress } from "~/utils/shorten-address";
 
 export function ConfirmTransactionStep() {
   const navigation = useNavigation();
+  const toast = useToastController();
 
   const { address } = useAccount();
   const { hasEnabledBiometrics } = useUserPreferences();
@@ -84,6 +86,12 @@ export function ConfirmTransactionStep() {
     },
     {
       onSuccess() {
+        toast.show("Transaction Complete", {
+          burntOptions: {
+            preset: "done",
+            haptic: "success",
+          },
+        });
         navigation.goBack();
       },
       onError() {
@@ -94,7 +102,7 @@ export function ConfirmTransactionStep() {
 
   return (
     <YStack flex={1} justifyContent="space-between" space="$4">
-      <YStack flex={1} paddingVertical="$8" space="$8">
+      <YStack flex={1} justifyContent="center" space="$8">
         <YStack space="$2">
           <Ionicons name="paper-plane" size={28} />
           <Text fontSize="$8" fontWeight="700">
@@ -102,12 +110,33 @@ export function ConfirmTransactionStep() {
           </Text>
         </YStack>
 
-        <YStack space="$4">
+        <YStack space="$3">
           <XStack width="100%" justifyContent="space-between">
-            <Text color="$color10" fontSize="$6" fontWeight="600">
+            <Text color="$color10" fontSize="$6" fontWeight="500">
+              Asset
+            </Text>
+
+            <Text fontSize="$6" fontWeight="500">
+              {transferAsset?.tokenName}
+            </Text>
+          </XStack>
+
+          <XStack width="100%" justifyContent="space-between">
+            <Text color="$color10" fontSize="$6" fontWeight="500">
+              From
+            </Text>
+
+            <Text fontSize="$6" fontWeight="500">
+              {shortenAddress(address!)}
+            </Text>
+          </XStack>
+
+          <XStack width="100%" justifyContent="space-between">
+            <Text color="$color10" fontSize="$6" fontWeight="500">
               Value
             </Text>
-            <Text fontSize="$6" fontWeight="600">
+
+            <Text fontSize="$6" fontWeight="500">
               {formatUnits(transferValue!, tokenBalance?.decimals ?? 18)}{" "}
               {tokenBalance?.symbol}
             </Text>
@@ -119,7 +148,7 @@ export function ConfirmTransactionStep() {
 
       <Theme name="dark">
         <Button
-          size="$4"
+          size="$5"
           onPress={() => mutate()}
           opacity={!isLoading ? 1.0 : 0.75}
           disabled={isLoading}
@@ -129,7 +158,7 @@ export function ConfirmTransactionStep() {
               <Spinner />
             </Button.Icon>
           )}
-          <Button.Text fontSize="$6" fontWeight="500">
+          <Button.Text fontSize="$6" fontWeight="600">
             Confirm Transaction
           </Button.Text>
         </Button>

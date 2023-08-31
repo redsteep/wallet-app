@@ -1,7 +1,9 @@
+import type { ImageSource } from "expo-image";
 import type { Address } from "viem";
 
 export interface Asset {
   tokenName: string;
+  tokenImage?: ImageSource;
   tokenAddress?: Address;
   coinGeckoId?: string;
 }
@@ -10,6 +12,7 @@ export interface Asset {
 export const ownedAssets: Asset[] = [
   {
     tokenName: "Ethereum",
+    tokenImage: require("assets/ethereum.png"),
     coinGeckoId: "ethereum",
   },
   {

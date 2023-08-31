@@ -1,4 +1,5 @@
 import { PanModal } from "@wallet/pan-modal";
+import { Image } from "expo-image";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { Circle, Text, XStack, YStack } from "tamagui";
 import { P, match } from "ts-pattern";
@@ -51,7 +52,15 @@ export function TokenRow({
   const children = (
     <XStack justifyContent="space-between">
       <XStack alignItems="center" space="$2.5">
-        <Circle width="$4.5" height="$4.5" backgroundColor="$color" />
+        <Image
+          source={asset.tokenImage}
+          style={{
+            width: 50,
+            height: 50,
+            backgroundColor: "black",
+            borderRadius: 100,
+          }}
+        />
 
         <YStack space="$1.5">
           <Text fontSize="$6" fontWeight="600">

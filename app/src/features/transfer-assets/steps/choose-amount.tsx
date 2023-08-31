@@ -147,13 +147,13 @@ export function ChooseAmountStep() {
 
         <Theme name="dark">
           <Button
-            size="$4"
+            size="$5"
             width="100%"
             onPress={() => actions.setTransferValue(parsedUnits)}
             opacity={validAmount ? 1.0 : 0.75}
             disabled={!validAmount}
           >
-            <Button.Text fontSize="$6" fontWeight="500">
+            <Button.Text fontSize="$6" fontWeight="600">
               Continue
             </Button.Text>
           </Button>

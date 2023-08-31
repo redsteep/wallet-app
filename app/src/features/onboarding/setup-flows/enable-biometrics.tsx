@@ -46,7 +46,7 @@ export function EnableBiometricsFlow({ goNext }: { goNext: () => void }) {
         <Text fontSize="$8" fontWeight="700">
           Enable Biometric Authentication
         </Text>
-        <Text color="$color10" fontSize="$5" fontWeight="500">
+        <Text color="$color10" fontSize="$6" fontWeight="500">
           Use {biometricProductNames?.join(" or ")} to securely access your wallet.
         </Text>
       </YStack>
@@ -54,22 +54,22 @@ export function EnableBiometricsFlow({ goNext }: { goNext: () => void }) {
       <Stack justifyContent="center" alignItems="center">
         <Image
           source={require("assets/face-id.png")}
-          style={{ width: width * 0.5, height: width * 0.5 }}
+          style={{ width: width * 0.4, height: width * 0.4 }}
           transition={{ effect: "cross-dissolve", duration: 250 }}
         />
       </Stack>
 
       <YStack space="$3">
-        <Button size="$4" onPress={goNext} chromeless>
-          <Button.Text fontSize="$6" fontWeight="500">
-            Enable Later
+        <Button size="$5" onPress={goNext} chromeless>
+          <Button.Text fontSize="$6" fontWeight="600">
+            Remind Later
           </Button.Text>
         </Button>
 
         <Theme name="dark">
-          <Button size="$4" onPress={enableBiometrics}>
-            <Button.Text fontSize="$6" fontWeight="500">
-              Enable Biometric Authentication
+          <Button size="$5" onPress={enableBiometrics}>
+            <Button.Text fontSize="$6" fontWeight="600">
+              Use {biometricProductNames} Now
             </Button.Text>
           </Button>
         </Theme>

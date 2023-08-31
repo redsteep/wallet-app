@@ -1,22 +1,26 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { PanModal } from "@wallet/pan-modal";
-import { useMemo } from "react";
+import { ImpactFeedbackStyle, impactAsync } from "expo-haptics";
+import { Image } from "expo-image";
+import { useMemo, useState } from "react";
 import { Pressable } from "react-native";
 import { LineGraph, type GraphPoint } from "react-native-graph";
-import { Separator, Stack, Text, View, XStack, YStack } from "tamagui";
+import { Separator, Text, View, XStack, YStack, useTheme } from "tamagui";
 import { P, match } from "ts-pattern";
 import { useAccount, useBalance } from "wagmi";
 import { FadingScrollView } from "~/components/fading-scroll-view";
 import { SafeAreaStack } from "~/components/safe-area-stack";
 import { SelectionDot } from "~/features/assets/components/selection-dot";
+import { TokenStatistic } from "~/features/assets/components/token-statistic";
 import { useCoinData } from "~/features/assets/hooks/use-coin-data";
 import { useMarketChart } from "~/features/assets/hooks/use-market-charts";
 import { type HomeStackScreenProps } from "~/navigation/navigators/home-navigator";
 import { commify } from "~/utils/commify";
 
 export function TokenScreen({ route, navigation }: HomeStackScreenProps<"Token">) {
-  const { asset } = route.params;
+  const theme = useTheme();
 
+  const { asset } = route.params;
   const { address } = useAccount();
   const { data: balanceData } = useBalance({
     address,
@@ -42,7 +46,13 @@ export function TokenScreen({ route, navigation }: HomeStackScreenProps<"Token">
 
   const marketData = coinData?.market_data;
   const currentUsdPrice = marketData?.current_price.usd ?? 0.0;
-  const currentUsdPriceString = commify(currentUsdPrice.toFixed(2));
+  const [priceTitle, setPriceTitle] = useState(currentUsdPrice);
+
+  // TODO: Move price and graph out of this root screen component as
+  // frequently rerendering an entire screen kills JS thread completely
+  const updatePriceTitle = (point?: GraphPoint) => {
+    setPriceTitle(point?.value ?? currentUsdPrice);
+  };
 
   const priceChangePercentage = marketData?.price_change_percentage_24h ?? 0.0;
   const priceChangePercentageString = commify(priceChangePercentage.toFixed(2));
@@ -59,12 +69,15 @@ export function TokenScreen({ route, navigation }: HomeStackScreenProps<"Token">
       <SafeAreaStack flexDirection="column" backgroundColor="$backgroundStrong">
         <XStack justifyContent="space-between" padding="$4">
           <YStack space="$1.5">
-            <Stack
-              width="$5"
-              height="$5"
-              borderRadius="$10"
-              backgroundColor="$color"
-              marginBottom="$2"
+            <Image
+              source={asset.tokenImage}
+              style={{
+                width: 60,
+                height: 60,
+                backgroundColor: "black",
+                borderRadius: 100,
+                marginBottom: 8,
+              }}
             />
 
             <Text fontSize="$8" fontWeight="700">
@@ -72,7 +85,7 @@ export function TokenScreen({ route, navigation }: HomeStackScreenProps<"Token">
             </Text>
 
             <Text fontSize="$8" fontWeight="600" color="$color10" letterSpacing={0.25}>
-              ${currentUsdPriceString}
+              ${commify(priceTitle.toFixed(2))}
             </Text>
           </YStack>
 
@@ -114,7 +127,10 @@ export function TokenScreen({ route, navigation }: HomeStackScreenProps<"Token">
           <View width="100%" height={175}>
             {isLoadingChartData || graphPoints.length > 0 ? (
               <LineGraph
-                style={{ flex: 1 }}
+                style={{
+                  width: "100%",
+                  height: 175,
+                }}
                 points={graphPoints}
                 animated={true}
                 color="#000000"
@@ -122,6 +138,9 @@ export function TokenScreen({ route, navigation }: HomeStackScreenProps<"Token">
                 SelectionDot={SelectionDot}
                 verticalPadding={16}
                 enablePanGesture
+                onGestureStart={() => impactAsync(ImpactFeedbackStyle.Light)}
+                onPointSelected={(p) => updatePriceTitle(p)}
+                onGestureEnd={() => updatePriceTitle()}
               />
             ) : (
               <YStack flex={1} justifyContent="center" alignItems="center" space="$2">
@@ -181,67 +200,52 @@ export function TokenScreen({ route, navigation }: HomeStackScreenProps<"Token">
             <Separator />
 
             {coinData?.description.en && (
-              <YStack space="$2">
+              <YStack space="$3">
                 <XStack alignItems="center" space="$2">
-                  <Ionicons name="information-circle" size={24} />
-                  <Text fontSize="$6" fontWeight="600">
+                  <Ionicons name="list" color={theme.color10.get()} size={18} />
+                  <Text fontSize="$6" fontWeight="500">
                     Description
                   </Text>
                 </XStack>
 
-                <Text
-                  selectable
-                  color="$color10"
-                  fontSize="$5"
-                  fontWeight="500"
-                  letterSpacing={0.25}
-                >
-                  {coinData.description.en}
+                <Text selectable color="$color10" fontSize="$6" fontWeight="400">
+                  {coinData.description.en.substring(
+                    0,
+                    coinData.description.en.indexOf("\n") - 2,
+                  )}
                 </Text>
               </YStack>
             )}
 
-            {/* {marketData && (
+            {marketData && (
               <YStack>
-                <XStack alignItems="center" paddingBottom="$2" space="$2">
-                  <Ionicons name="stats-chart" size={24} />
-                  <Text fontSize="$6" fontWeight="600">
-                    Statistics
-                  </Text>
-                </XStack>
+                <TokenStatistic
+                  index={0}
+                  label="Market Cap"
+                  value={marketData.market_cap.usd}
+                  format="abbreviatedCurrency"
+                />
 
-                {[
-                  ["Total Volume", marketData.total_volume.usd],
-                  ["Total Supply", marketData.total_supply],
-                  ["Circulating Supply", marketData.circulating_supply],
-                ].map(([label, value], idx) => (
-                  <XStack
-                    justifyContent="space-between"
-                    alignItems="center"
-                    backgroundColor={idx % 2 !== 0 ? "$backgroundHover" : undefined}
-                    borderRadius="$4"
-                    padding="$2"
-                  >
-                    <Text fontSize="$5" fontWeight="500">
-                      {label}
-                    </Text>
-                    <Text fontSize="$5" fontWeight="500">
-                      {value}
-                    </Text>
-                  </XStack>
-                ))}
+                <TokenStatistic
+                  index={1}
+                  label="Total Volume"
+                  value={marketData.total_volume.usd}
+                  format="abbreviatedCurrency"
+                />
 
-                <Text
-                  selectable
-                  color="$color10"
-                  fontSize="$5"
-                  fontWeight="500"
-                  letterSpacing={0.25}
-                >
-                  {coinData.description.en}
-                </Text>
+                <TokenStatistic
+                  index={2}
+                  label="Circulating Supply"
+                  value={marketData.circulating_supply}
+                />
+
+                <TokenStatistic
+                  index={3}
+                  label="Total Supply"
+                  value={marketData.total_supply}
+                />
               </YStack>
-            )} */}
+            )}
           </YStack>
         </FadingScrollView>
       </SafeAreaStack>

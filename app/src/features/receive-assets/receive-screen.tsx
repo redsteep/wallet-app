@@ -62,7 +62,7 @@ export function ReceiveScreen() {
           space="$5"
         >
           <TouchableOpacity onPress={copyAddress}>
-            <Text color="$color10" fontSize="$5" fontWeight="500" letterSpacing={0.25}>
+            <Text color="$color10" fontSize="$6" fontWeight="500" letterSpacing={0.25}>
               {shortenAddress(address, 6)} <Ionicons name="copy-outline" size={16} />
             </Text>
           </TouchableOpacity>
@@ -70,12 +70,12 @@ export function ReceiveScreen() {
           <XStack padding="$4" backgroundColor="white" borderRadius="$8" elevation={16}>
             <QrCode
               value={address}
-              size={Dimensions.get("window").width * 0.8}
+              size={Dimensions.get("window").width * 0.75}
               backgroundColor="white"
             />
           </XStack>
 
-          <Text color="$color10" fontSize="$2" fontWeight="400" textAlign="center">
+          <Text color="$color10" fontSize="$2" textAlign="center">
             You can use this address to receive ETH and other Ethereum based tokens such
             as USDC. Sending other assets may result in permanent loss.
           </Text>
@@ -83,12 +83,15 @@ export function ReceiveScreen() {
 
         <Theme inverse>
           <Button
+            size="$5"
             onPress={shareAddress}
-            backgroundColor="$backgroundStrong"
+            fontSize="$6"
+            fontWeight="600"
             marginHorizontal="$8"
-            borderRadius="$8"
+            backgroundColor="$backgroundStrong"
+            borderRadius="$12"
           >
-            <Button.Text fontWeight="600">Share Address</Button.Text>
+            Share Address
           </Button>
         </Theme>
       </SafeAreaStack>
