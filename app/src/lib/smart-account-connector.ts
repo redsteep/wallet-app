@@ -137,33 +137,29 @@ export class SmartAccountConnector extends Connector<
         });
 
         this.#provider = this.#provider.withPaymasterMiddleware({
-          dummyPaymasterDataMiddleware: async (struct) => {
-            struct.callGasLimit = 0n;
-            struct.preVerificationGas = 0n;
-            struct.verificationGasLimit = 0n;
-            struct.paymasterAndData = "0x";
-            return struct;
-          },
+          dummyPaymasterDataMiddleware: async () => ({
+            callGasLimit: 0n,
+            preVerificationGas: 0n,
+            verificationGasLimit: 0n,
+            paymasterAndData: "0x",
+          }),
 
           paymasterDataMiddleware: async (struct) => {
             const userOperation: UserOperationRequest = deepHexlify(
               await resolveProperties(struct),
             );
 
-            const overrideGasFields =
-              await paymasterClient.request<SponsorUserOperationRequest>({
-                method: "pm_sponsorUserOperation",
-                params: [
-                  userOperation,
-                  this.options.entryPointAddress,
-                  { type: "erc20token", token: this.options.paymasterTokenAddress! },
-                ],
-              });
-
-            return {
-              ...userOperation,
-              ...overrideGasFields,
-            };
+            return await paymasterClient.request<SponsorUserOperationRequest>({
+              method: "pm_sponsorUserOperation",
+              params: [
+                userOperation,
+                this.options.entryPointAddress,
+                {
+                  type: "erc20token",
+                  token: this.options.paymasterTokenAddress!,
+                },
+              ],
+            });
           },
         });
       }

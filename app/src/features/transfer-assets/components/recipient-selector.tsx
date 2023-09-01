@@ -29,11 +29,11 @@ const AnimatedButton = Animated.createAnimatedComponent(Button);
 const AnimatedXStack = Animated.createAnimatedComponent(XStack);
 
 export function RecipientSelector() {
+  const transferContext = useTransferContext();
   const { presentationState } = usePanModalContext();
-  const { recipientAddress: chosenRecipientAddress, actions } = useTransferContext();
 
   const inputRef = useRef<TextInput>(null);
-  const [inputValue, setInputValue] = useState(chosenRecipientAddress ?? "");
+  const [inputValue, setInputValue] = useState(transferContext.recipientAddress ?? "");
 
   const recipientAddress = useDebounce(inputValue.trim()) as Address;
   const prevRecipientAddress = usePrevious(recipientAddress);
@@ -66,10 +66,18 @@ export function RecipientSelector() {
     },
   );
 
+  if (
+    typeof transferContext.recipientAddress !== "undefined" &&
+    typeof transferContext.transferAsset !== "undefined" &&
+    typeof transferContext.transferValue !== "undefined"
+  ) {
+    return null;
+  }
+
   return (
     <YStack space="$4">
       <AnimatedXStack
-        key={chosenRecipientAddress}
+        key={transferContext.recipientAddress}
         alignItems="center"
         space="$2"
         entering={FadeInRight.springify()
@@ -83,7 +91,7 @@ export function RecipientSelector() {
           .stiffness(60)
           .overshootClamping(1)}
       >
-        {match(chosenRecipientAddress)
+        {match(transferContext.recipientAddress)
           .with(P.nullish, () => (
             <XStack alignItems="center" space="$2">
               <AnimatedInput
@@ -132,7 +140,7 @@ export function RecipientSelector() {
               </Text>
 
               <Button
-                onPress={() => actions.setRecipientAddress()}
+                onPress={() => transferContext.actions.setRecipientAddress()}
                 hoverStyle={{ backgroundColor: "$backgroundHover" }}
                 pressStyle={{ backgroundColor: "$backgroundPress" }}
                 paddingVertical="$3"
@@ -143,7 +151,7 @@ export function RecipientSelector() {
                 unstyled
               >
                 <Text fontSize="$5" fontWeight="600">
-                  {shortenAddress(chosenRecipientAddress!)}
+                  {shortenAddress(transferContext.recipientAddress!)}
                 </Text>
               </Button>
             </XStack>
@@ -151,10 +159,10 @@ export function RecipientSelector() {
           .exhaustive()}
       </AnimatedXStack>
 
-      {!chosenRecipientAddress && (
+      {!transferContext.recipientAddress && (
         <AnimatedXStack
-          key={`${recipientAddress}${chosenRecipientAddress}`}
-          onPress={() => actions.setRecipientAddress(recipientAddress!)}
+          key={`${recipientAddress}${transferContext.recipientAddress}`}
+          onPress={() => transferContext.actions.setRecipientAddress(recipientAddress!)}
           disabled={!isAddress(recipientAddress)}
           pressStyle={{ opacity: 0.75 }}
           entering={(prevRecipientAddress ? FadeInRight : FadeInUp)

@@ -4,7 +4,7 @@ import { useToastController } from "@tamagui/toast";
 import { NotificationFeedbackType, notificationAsync } from "expo-haptics";
 import { authenticateAsync } from "expo-local-authentication";
 import { useMutation } from "react-query";
-import { Button, Spinner, Text, Theme, XStack, YStack } from "tamagui";
+import { Button, Separator, Spinner, Text, Theme, XStack, YStack } from "tamagui";
 import { formatUnits } from "viem";
 import {
   erc20ABI,
@@ -18,13 +18,16 @@ import { useTransferContext } from "~/features/transfer-assets/context";
 import { useUserPreferences } from "~/lib/user-preferences";
 import { shortenAddress } from "~/utils/shorten-address";
 
+class LocalAuthenticationError extends Error {}
+
 export function ConfirmTransactionStep() {
   const navigation = useNavigation();
   const toast = useToastController();
 
   const { address } = useAccount();
   const { hasEnabledBiometrics } = useUserPreferences();
-  const { recipientAddress, transferAsset, transferValue } = useTransferContext();
+  const { recipientAddress, transferAsset, transferValue, actions } =
+    useTransferContext();
 
   const { data: tokenBalance } = useBalance({
     address,
@@ -56,9 +59,9 @@ export function ConfirmTransactionStep() {
       }
 
       if (hasEnabledBiometrics) {
-        const authStatus = await authenticateAsync({ disableDeviceFallback: false });
-        if (!authStatus.success) {
-          throw new Error("Failed biometric auth");
+        const { success } = await authenticateAsync({ disableDeviceFallback: true });
+        if (!success) {
+          throw new LocalAuthenticationError();
         }
       }
 
@@ -85,17 +88,22 @@ export function ConfirmTransactionStep() {
       }
     },
     {
-      onSuccess() {
-        toast.show("Transaction Complete", {
+      onSettled(_, error) {
+        notificationAsync(
+          error ? NotificationFeedbackType.Error : NotificationFeedbackType.Success,
+        );
+
+        if (error instanceof LocalAuthenticationError) {
+          return;
+        }
+
+        toast.show(error ? "Transaction Failed" : "Transaction Complete", {
           burntOptions: {
-            preset: "done",
-            haptic: "success",
+            preset: error ? "error" : "done",
           },
         });
+
         navigation.goBack();
-      },
-      onError() {
-        notificationAsync(NotificationFeedbackType.Error);
       },
     },
   );
@@ -111,35 +119,121 @@ export function ConfirmTransactionStep() {
         </YStack>
 
         <YStack space="$3">
-          <XStack width="100%" justifyContent="space-between">
-            <Text color="$color10" fontSize="$6" fontWeight="500">
-              Asset
-            </Text>
-
-            <Text fontSize="$6" fontWeight="500">
-              {transferAsset?.tokenName}
-            </Text>
-          </XStack>
-
-          <XStack width="100%" justifyContent="space-between">
+          {/* <XStack
+            width="100%"
+            justifyContent="space-between"
+            alignItems="center"
+            space="$2.5"
+          >
             <Text color="$color10" fontSize="$6" fontWeight="500">
               From
             </Text>
 
-            <Text fontSize="$6" fontWeight="500">
+            <Separator />
+
+            <Text paddingVertical="$2" fontSize="$6" fontWeight="500">
               {shortenAddress(address!)}
             </Text>
+          </XStack> */}
+
+          <XStack
+            width="100%"
+            justifyContent="space-between"
+            alignItems="center"
+            space="$3"
+          >
+            <Text color="$color10" fontSize="$6" fontWeight="500">
+              To
+            </Text>
+
+            <Separator />
+
+            <Button
+              onPress={() => actions.setRecipientAddress()}
+              hoverStyle={{ backgroundColor: "$backgroundHover" }}
+              pressStyle={{ backgroundColor: "$backgroundPress" }}
+              flexDirection="row"
+              alignItems="center"
+              paddingVertical="$2"
+              paddingHorizontal="$3"
+              backgroundColor="$background"
+              borderRadius="$8"
+              overflow="hidden"
+              unstyled
+            >
+              <Text fontSize="$6" fontWeight="500">
+                {shortenAddress(recipientAddress!)}
+              </Text>
+              <Ionicons name="create-outline" size={18} />
+            </Button>
           </XStack>
 
-          <XStack width="100%" justifyContent="space-between">
+          <XStack
+            width="100%"
+            justifyContent="space-between"
+            alignItems="center"
+            space="$3"
+          >
+            <Text color="$color10" fontSize="$6" fontWeight="500">
+              Asset
+            </Text>
+
+            <Separator />
+
+            <Button
+              onPress={() => {
+                actions.setTransferAsset();
+                actions.setTransferValue();
+              }}
+              hoverStyle={{ backgroundColor: "$backgroundHover" }}
+              pressStyle={{ backgroundColor: "$backgroundPress" }}
+              flexDirection="row"
+              alignItems="center"
+              paddingVertical="$2"
+              paddingHorizontal="$3"
+              backgroundColor="$background"
+              borderRadius="$8"
+              overflow="hidden"
+              unstyled
+            >
+              <Text fontSize="$6" fontWeight="500">
+                {transferAsset?.tokenName}
+              </Text>
+              <Ionicons name="create-outline" size={18} />
+            </Button>
+          </XStack>
+
+          <XStack
+            width="100%"
+            justifyContent="space-between"
+            alignItems="center"
+            space="$3"
+          >
             <Text color="$color10" fontSize="$6" fontWeight="500">
               Value
             </Text>
 
-            <Text fontSize="$6" fontWeight="500">
-              {formatUnits(transferValue!, tokenBalance?.decimals ?? 18)}{" "}
-              {tokenBalance?.symbol}
-            </Text>
+            <Separator />
+
+            <Button
+              onPress={() => actions.setTransferValue()}
+              hoverStyle={{ backgroundColor: "$backgroundHover" }}
+              pressStyle={{ backgroundColor: "$backgroundPress" }}
+              flexDirection="row"
+              alignItems="center"
+              paddingVertical="$2"
+              paddingHorizontal="$3"
+              backgroundColor="$background"
+              borderRadius="$8"
+              overflow="hidden"
+              unstyled
+            >
+              <Text fontSize="$6" fontWeight="500">
+                {formatUnits(transferValue!, tokenBalance?.decimals ?? 18)}{" "}
+                {tokenBalance?.symbol}
+              </Text>
+              <Ionicons name="create-outline" size={18} />
+            </Button>
           </XStack>
         </YStack>
       </YStack>

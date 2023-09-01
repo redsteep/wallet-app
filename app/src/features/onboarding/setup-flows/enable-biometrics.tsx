@@ -33,7 +33,7 @@ export function EnableBiometricsFlow({ goNext }: { goNext: () => void }) {
   );
 
   const enableBiometrics = async () => {
-    const { success } = await authenticateAsync();
+    const { success } = await authenticateAsync({ disableDeviceFallback: true });
     if (success) {
       setEnabledBiometrics(true);
       goNext();
