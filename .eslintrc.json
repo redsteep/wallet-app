@@ -21,7 +21,8 @@
     }]
   },
   "ignorePatterns": [
-    "scripts/*.mjs"
+    "scripts/*.mjs",
+    "node_modules/"
   ],
   "env": {
     "node": true

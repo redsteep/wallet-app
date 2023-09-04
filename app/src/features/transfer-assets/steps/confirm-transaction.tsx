@@ -1,13 +1,11 @@
-import {
-  ImpactFeedbackStyle,
-  NotificationFeedbackType,
-  impactAsync,
-  notificationAsync,
-} from "expo-haptics";
-import { useState } from "react";
-import { Button, Spinner, Text, Theme, View, XStack, YStack } from "tamagui";
-import { P, match } from "ts-pattern";
-import { formatUnits, parseUnits } from "viem";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { useNavigation } from "@react-navigation/native";
+import { useToastController } from "@tamagui/toast";
+import { NotificationFeedbackType, notificationAsync } from "expo-haptics";
+import { authenticateAsync } from "expo-local-authentication";
+import { useMutation } from "react-query";
+import { Button, Separator, Spinner, Text, Theme, XStack, YStack } from "tamagui";
+import { formatUnits } from "viem";
 import {
   erc20ABI,
   useAccount,
@@ -15,25 +13,21 @@ import {
   useContractWrite,
   useSendTransaction,
 } from "wagmi";
-import { TokenRow } from "~/features/assets/components/token-row";
+import { NotDeployedWarning } from "~/features/transfer-assets/components/not-deployed-warning";
 import { useTransferContext } from "~/features/transfer-assets/context";
-import { shortenAddress } from "~/utils/shorten-address";
-import Ionicons from "@expo/vector-icons/Ionicons";
 import { useUserPreferences } from "~/lib/user-preferences";
-import { useMutation } from "react-query";
-import {
-  AuthenticationType,
-  authenticateAsync,
-  supportedAuthenticationTypesAsync,
-} from "expo-local-authentication";
-import { useNavigation } from "@react-navigation/native";
+import { shortenAddress } from "~/utils/shorten-address";
+
+class LocalAuthenticationError extends Error {}
 
 export function ConfirmTransactionStep() {
   const navigation = useNavigation();
+  const toast = useToastController();
 
   const { address } = useAccount();
   const { hasEnabledBiometrics } = useUserPreferences();
-  const { recipientAddress, transferAsset, transferValue } = useTransferContext();
+  const { recipientAddress, transferAsset, transferValue, actions } =
+    useTransferContext();
 
   const { data: tokenBalance } = useBalance({
     address,
@@ -58,20 +52,16 @@ export function ConfirmTransactionStep() {
     functionName: "transfer",
   });
 
-  const {
-    data: txData,
-    isLoading,
-    mutate,
-  } = useMutation(
+  const { isLoading, mutate } = useMutation(
     async () => {
       if (!recipientAddress || !transferAsset || !transferValue) {
         return;
       }
 
       if (hasEnabledBiometrics) {
-        const authStatus = await authenticateAsync({ disableDeviceFallback: false });
-        if (!authStatus.success) {
-          throw new Error("Failed biometric auth");
+        const { success } = await authenticateAsync({ disableDeviceFallback: true });
+        if (!success) {
+          throw new LocalAuthenticationError();
         }
       }
 
@@ -98,18 +88,29 @@ export function ConfirmTransactionStep() {
       }
     },
     {
-      onSuccess() {
+      onSettled(_, error) {
+        notificationAsync(
+          error ? NotificationFeedbackType.Error : NotificationFeedbackType.Success,
+        );
+
+        if (error instanceof LocalAuthenticationError) {
+          return;
+        }
+
+        toast.show(error ? "Transaction Failed" : "Transaction Complete", {
+          burntOptions: {
+            preset: error ? "error" : "done",
+          },
+        });
+
         navigation.goBack();
-      },
-      onError() {
-        notificationAsync(NotificationFeedbackType.Error);
       },
     },
   );
 
   return (
-    <YStack flex={1} justifyContent="space-between">
-      <YStack flex={1} paddingVertical="$8" space="$8">
+    <YStack flex={1} justifyContent="space-between" space="$4">
+      <YStack flex={1} justifyContent="center" space="$8">
         <YStack space="$2">
           <Ionicons name="paper-plane" size={28} />
           <Text fontSize="$8" fontWeight="700">
@@ -117,22 +118,131 @@ export function ConfirmTransactionStep() {
           </Text>
         </YStack>
 
-        <YStack space="$4">
-          <XStack width="100%" justifyContent="space-between">
-            <Text color="$color10" fontSize="$6" fontWeight="600">
+        <YStack space="$3">
+          {/* <XStack
+            width="100%"
+            justifyContent="space-between"
+            alignItems="center"
+            space="$2.5"
+          >
+            <Text color="$color10" fontSize="$6" fontWeight="500">
+              From
+            </Text>
+
+            <Separator />
+
+            <Text paddingVertical="$2" fontSize="$6" fontWeight="500">
+              {shortenAddress(address!)}
+            </Text>
+          </XStack> */}
+
+          <XStack
+            width="100%"
+            justifyContent="space-between"
+            alignItems="center"
+            space="$3"
+          >
+            <Text color="$color10" fontSize="$6" fontWeight="500">
+              To
+            </Text>
+
+            <Separator />
+
+            <Button
+              onPress={() => actions.setRecipientAddress()}
+              hoverStyle={{ backgroundColor: "$backgroundHover" }}
+              pressStyle={{ backgroundColor: "$backgroundPress" }}
+              flexDirection="row"
+              alignItems="center"
+              paddingVertical="$2"
+              paddingHorizontal="$3"
+              backgroundColor="$background"
+              borderRadius="$8"
+              overflow="hidden"
+              unstyled
+            >
+              <Text fontSize="$6" fontWeight="500">
+                {shortenAddress(recipientAddress!)}
+              </Text>
+              <Ionicons name="create-outline" size={18} />
+            </Button>
+          </XStack>
+
+          <XStack
+            width="100%"
+            justifyContent="space-between"
+            alignItems="center"
+            space="$3"
+          >
+            <Text color="$color10" fontSize="$6" fontWeight="500">
+              Asset
+            </Text>
+
+            <Separator />
+
+            <Button
+              onPress={() => {
+                actions.setTransferAsset();
+                actions.setTransferValue();
+              }}
+              hoverStyle={{ backgroundColor: "$backgroundHover" }}
+              pressStyle={{ backgroundColor: "$backgroundPress" }}
+              flexDirection="row"
+              alignItems="center"
+              paddingVertical="$2"
+              paddingHorizontal="$3"
+              backgroundColor="$background"
+              borderRadius="$8"
+              overflow="hidden"
+              unstyled
+            >
+              <Text fontSize="$6" fontWeight="500">
+                {transferAsset?.tokenName}
+              </Text>
+              <Ionicons name="create-outline" size={18} />
+            </Button>
+          </XStack>
+
+          <XStack
+            width="100%"
+            justifyContent="space-between"
+            alignItems="center"
+            space="$3"
+          >
+            <Text color="$color10" fontSize="$6" fontWeight="500">
               Value
             </Text>
-            <Text fontSize="$6" fontWeight="600">
-              {formatUnits(transferValue!, tokenBalance?.decimals ?? 18)}{" "}
-              {tokenBalance?.symbol}
-            </Text>
+
+            <Separator />
+
+            <Button
+              onPress={() => actions.setTransferValue()}
+              hoverStyle={{ backgroundColor: "$backgroundHover" }}
+              pressStyle={{ backgroundColor: "$backgroundPress" }}
+              flexDirection="row"
+              alignItems="center"
+              paddingVertical="$2"
+              paddingHorizontal="$3"
+              backgroundColor="$background"
+              borderRadius="$8"
+              overflow="hidden"
+              unstyled
+            >
+              <Text fontSize="$6" fontWeight="500">
+                {formatUnits(transferValue!, tokenBalance?.decimals ?? 18)}{" "}
+                {tokenBalance?.symbol}
+              </Text>
+              <Ionicons name="create-outline" size={18} />
+            </Button>
           </XStack>
         </YStack>
       </YStack>
 
+      <NotDeployedWarning />
+
       <Theme name="dark">
         <Button
-          size="$4"
+          size="$5"
           onPress={() => mutate()}
           opacity={!isLoading ? 1.0 : 0.75}
           disabled={isLoading}
@@ -142,7 +252,7 @@ export function ConfirmTransactionStep() {
               <Spinner />
             </Button.Icon>
           )}
-          <Button.Text fontSize="$6" fontWeight="500">
+          <Button.Text fontSize="$6" fontWeight="600">
             Confirm Transaction
           </Button.Text>
         </Button>

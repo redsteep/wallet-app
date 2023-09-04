@@ -1,12 +1,7 @@
 import { ImpactFeedbackStyle, impactAsync } from "expo-haptics";
 import { useDeferredValue, useState } from "react";
-import Animated, {
-  FadeInDown,
-  FadeInUp,
-  FadeOutDown,
-  FadeOutUp,
-} from "react-native-reanimated";
-import { Button, Text, Theme, View, XStack, YStack } from "tamagui";
+import Animated, { FadeInDown, FadeOutDown } from "react-native-reanimated";
+import { Button, Text, Theme, XStack, YStack } from "tamagui";
 import { P, match } from "ts-pattern";
 import { parseUnits } from "viem";
 import { useAccount, useBalance } from "wagmi";
@@ -68,18 +63,19 @@ export function ChooseAmountStep() {
         {/* <Text fontSize="$12" fontWeight="700">
           $
         </Text> */}
-        <Text
-          height="$10"
-          fontSize="$14"
-          fontWeight="700"
-          adjustsFontSizeToFit
-          textAlign="center"
-          textAlignVertical="center"
-          alignSelf="center"
-          numberOfLines={1}
-        >
-          {inputValue}
-        </Text>
+        <YStack height="$10" justifyContent="center">
+          <Text
+            fontSize="$14"
+            fontWeight="700"
+            textAlign="center"
+            textAlignVertical="center"
+            adjustsFontSizeToFit
+            allowFontScaling={false}
+            numberOfLines={1}
+          >
+            {inputValue}
+          </Text>
+        </YStack>
 
         {!enoughBalance && (
           <AnimatedText
@@ -104,20 +100,29 @@ export function ChooseAmountStep() {
 
       <YStack alignItems="center" space="$4">
         {transferAsset && (
-          <View
+          <XStack
             width="100%"
-            backgroundColor="$backgroundPress"
+            alignItems="center"
+            justifyContent="space-between"
+            backgroundColor="$color4"
             borderRadius="$6"
-            paddingVertical="$3"
-            paddingHorizontal="$4"
+            padding="$3"
+            space="$2"
           >
             <TokenRow
-              tokenName={transferAsset.tokenName}
-              token={transferAsset.tokenAddress}
+              asset={transferAsset}
               onPress={actions.setTransferAsset}
-              withPreciseFormatting
+              trimDecimals={false}
+              showMarketData={false}
+              asTrigger={false}
             />
-          </View>
+
+            {/* <Theme inverse>
+              <Button size="$2" fontWeight="600" borderRadius="$10">
+                Use Max
+              </Button>
+            </Theme> */}
+          </XStack>
         )}
 
         <YStack width="100%" space="$4">
@@ -142,13 +147,13 @@ export function ChooseAmountStep() {
 
         <Theme name="dark">
           <Button
-            size="$4"
+            size="$5"
             width="100%"
             onPress={() => actions.setTransferValue(parsedUnits)}
             opacity={validAmount ? 1.0 : 0.75}
             disabled={!validAmount}
           >
-            <Button.Text fontSize="$6" fontWeight="500">
+            <Button.Text fontSize="$6" fontWeight="600">
               Continue
             </Button.Text>
           </Button>

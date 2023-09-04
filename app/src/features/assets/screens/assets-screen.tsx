@@ -1,22 +1,36 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { PanModal } from "@wallet/pan-modal";
-import { Pressable, TouchableOpacity } from "react-native";
-import { ScrollView, Stack, Text, View, XStack, YStack, ZStack } from "tamagui";
+import { TouchableOpacity } from "react-native";
+import { Text, XStack, YStack } from "tamagui";
 import { useAccount } from "wagmi";
+import { FadingScrollView } from "~/components/fading-scroll-view";
 import { SafeAreaStack } from "~/components/safe-area-stack";
-import { ActionButton } from "~/features/assets/components/action-button";
-import { TokenRow } from "~/features/assets/components/token-row";
 import { ownedAssets } from "~/features/assets/assets";
-import { useWeb3Auth } from "~/lib/web3auth";
-import { shortenAddress } from "~/utils/shorten-address";
+import { ActionButton } from "~/features/assets/components/action-button";
 import { AssetsList } from "~/features/assets/components/assets-list";
-import { HomeStackScreenProps } from "~/navigation/navigators/home-navigator";
+import { useCoinPrices } from "~/features/assets/hooks/use-coin-prices";
+import { useWeb3Auth } from "~/lib/web3auth";
+import { type HomeStackScreenProps } from "~/navigation/navigators/home-navigator";
+import { shortenAddress } from "~/utils/shorten-address";
 
 export function AssetsScreen({ navigation }: HomeStackScreenProps<"Assets">) {
   const { address } = useAccount();
   const { logout } = useWeb3Auth((state) => state.actions);
 
+  const { data: tokenPrices } = useCoinPrices({
+    address: address!,
+    assets: ownedAssets.filter((asset) => !!asset.coinGeckoId),
+    againstCurrency: "usd",
+  });
+
+  const totalPortfolioValue = (tokenPrices ?? []).reduce(
+    (acc, [balance, priceData]) =>
+      acc + (balance ? parseFloat(balance.formatted) * priceData : 0.0),
+    0.0,
+  );
+
   const formattedAddress = address ? shortenAddress(address) : "Loading...";
+  const formattedPortfolioValue = totalPortfolioValue.toFixed(2);
 
   return (
     <PanModal.Offscreen>
@@ -25,25 +39,30 @@ export function AssetsScreen({ navigation }: HomeStackScreenProps<"Assets">) {
         justifyContent="space-between"
         backgroundColor="$backgroundStrong"
         padding="$4"
+        space="$4"
       >
-        <YStack space="$4">
-          <XStack justifyContent="space-between" alignItems="center">
-            <YStack space="$2">
-              <Text color="$color10" fontSize="$6" letterSpacing={0.25}>
-                {formattedAddress}
-              </Text>
-              <Text fontSize="$10" fontWeight="700" letterSpacing={0.5} lineHeight={36.0}>
-                $0.00
-              </Text>
-            </YStack>
+        <XStack justifyContent="space-between" alignItems="center">
+          <YStack>
+            <Text color="$color10" fontSize="$6" letterSpacing={0.25}>
+              {formattedAddress}
+            </Text>
 
-            <TouchableOpacity onPress={logout}>
-              <Text fontWeight="500">Logout</Text>
-            </TouchableOpacity>
-          </XStack>
+            <Text fontSize="$10" fontWeight="700">
+              ${formattedPortfolioValue}
+            </Text>
+          </YStack>
 
-          <AssetsList withTrigger onPress={() => navigation.navigate("Transfer")} />
-        </YStack>
+          <TouchableOpacity onPress={logout}>
+            <Text fontWeight="500">Logout</Text>
+          </TouchableOpacity>
+        </XStack>
+
+        <FadingScrollView>
+          <AssetsList
+            onPress={(asset) => navigation.navigate("Token", { asset })}
+            asTrigger
+          />
+        </FadingScrollView>
 
         <XStack alignItems="center" justifyContent="space-between" space="$3">
           <ActionButton onTriggerPress={() => navigation.navigate("Receive")}>

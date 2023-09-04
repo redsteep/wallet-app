@@ -1,57 +1,106 @@
 import { PanModal } from "@wallet/pan-modal";
+import { Image } from "expo-image";
 import { TouchableOpacity } from "react-native-gesture-handler";
-import { Stack, Text, XStack, YStack } from "tamagui";
-import type { Address } from "viem";
+import { Circle, Text, XStack, YStack } from "tamagui";
+import { P, match } from "ts-pattern";
 import { useAccount, useBalance } from "wagmi";
+import type { Asset } from "~/features/assets/assets";
+import { useCoinData } from "~/features/assets/hooks/use-coin-data";
+import { commify } from "~/utils/commify";
 
 interface TokenRowProps {
-  token?: Address;
-  tokenName: string;
-  withTrigger?: boolean;
-  withPreciseFormatting?: boolean;
+  asset: Asset;
+  asTrigger?: boolean;
+  trimDecimals?: boolean;
+  showMarketData?: boolean;
   onPress?: () => void;
 }
 
 export function TokenRow({
-  token,
-  tokenName,
-  withTrigger,
-  withPreciseFormatting,
+  asset,
+  asTrigger = true,
+  trimDecimals = true,
+  showMarketData = true,
   onPress,
 }: TokenRowProps) {
   const { address } = useAccount();
-  const { data } = useBalance({ address, token, watch: true });
+  const { data: coinData } = useCoinData(showMarketData ? asset.coinGeckoId : undefined);
+  const { data: balanceData } = useBalance({
+    address,
+    token: asset.tokenAddress,
+    watch: true,
+  });
 
-  const formattedBalance = !withPreciseFormatting
-    ? Number(data?.formatted).toFixed(4)
-    : data?.formatted;
+  const marketData = coinData?.market_data;
+  const currentUsdPrice = marketData?.current_price.usd ?? 0.0;
+
+  const formattedBalance = commify(
+    balanceData
+      ? trimDecimals
+        ? Number(balanceData.formatted).toFixed(4)
+        : balanceData.formatted
+      : 0.0,
+  );
+
+  const currentValueString = commify(
+    balanceData ? (parseFloat(balanceData.formatted) * currentUsdPrice).toFixed(2) : 0.0,
+  );
+
+  const priceChangePercentage = marketData?.price_change_percentage_24h ?? 0.0;
+  const priceChangePercentageString = commify(priceChangePercentage.toFixed(2));
 
   const children = (
     <XStack justifyContent="space-between">
       <XStack alignItems="center" space="$2.5">
-        <Stack width="$4.5" height="$4.5" borderRadius="$10" backgroundColor="$color" />
+        <Image
+          source={asset.tokenImage}
+          style={{
+            width: 50,
+            height: 50,
+            backgroundColor: "black",
+            borderRadius: 100,
+          }}
+        />
 
         <YStack space="$1.5">
           <Text fontSize="$6" fontWeight="600">
-            {tokenName}
+            {asset.tokenName}
           </Text>
 
-          <Text color="$color10">
-            {data ? `${formattedBalance} ${data.symbol}` : "Loading..."}
+          <Text color="$color10" fontSize="$4" fontWeight="500" letterSpacing={0.25}>
+            {balanceData ? `${formattedBalance} ${balanceData.symbol}` : "Loading..."}
           </Text>
         </YStack>
       </XStack>
 
-      <YStack justifyContent="center" alignItems="flex-end" space="$1">
-        <Text fontSize="$6" fontWeight="500">
-          $0.00
-        </Text>
-        <Text color="$color10">+1.0%</Text>
-      </YStack>
+      {showMarketData && (
+        <YStack justifyContent="center" alignItems="flex-end" space="$1">
+          <Text fontSize="$6" fontWeight="600" letterSpacing={0.25}>
+            ${currentValueString}
+          </Text>
+
+          {match(priceChangePercentage)
+            .with(P.number.positive(), () => (
+              <Text color="$green11" fontSize="$4" fontWeight="500" letterSpacing={0.25}>
+                ↑ {priceChangePercentageString}%
+              </Text>
+            ))
+            .with(P.number.negative(), () => (
+              <Text color="$red10" fontSize="$4" fontWeight="500" letterSpacing={0.25}>
+                ↓ {priceChangePercentageString}%
+              </Text>
+            ))
+            .otherwise(() => (
+              <Text color="$color10" fontSize="$4" fontWeight="500" letterSpacing={0.25}>
+                {priceChangePercentageString}%
+              </Text>
+            ))}
+        </YStack>
+      )}
     </XStack>
   );
 
-  return withTrigger ? (
+  return asTrigger ? (
     <PanModal.Trigger onTriggerPress={onPress}>{children}</PanModal.Trigger>
   ) : (
     <TouchableOpacity onPress={onPress}>{children}</TouchableOpacity>

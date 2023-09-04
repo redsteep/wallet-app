@@ -27,12 +27,12 @@ export function AcceptTermsFlow({ goNext }: { goNext: () => void }) {
         <Text fontSize="$8" fontWeight="700">
           Accept Terms
         </Text>
-        <Text color="$color10" fontSize="$5" fontWeight="500">
+        <Text color="$color10" fontSize="$6" fontWeight="500">
           Please read and agree to the following terms before you continue.
         </Text>
       </YStack>
 
-      <YStack space="$6">
+      <YStack space="$8">
         <CheckboxWithLabel
           name="responsibility"
           control={control}
@@ -47,14 +47,14 @@ export function AcceptTermsFlow({ goNext }: { goNext: () => void }) {
 
       <Theme name="dark">
         <Button
-          size="$4"
+          size="$5"
+          fontSize="$6"
+          fontWeight="600"
           opacity={hasAcceptedTerms ? 1.0 : 0.75}
           disabled={!hasAcceptedTerms}
           onPress={goNext}
         >
-          <Button.Text fontSize="$6" fontWeight="500">
-            I Understand, Continue
-          </Button.Text>
+          I Understand, Continue
         </Button>
       </Theme>
     </Stack>
