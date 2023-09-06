@@ -13,9 +13,9 @@ import { TransferContext } from "~/features/transfer-assets/context";
 import { ChooseAmountStep } from "~/features/transfer-assets/steps/choose-amount";
 import { ChooseAssetStep } from "~/features/transfer-assets/steps/choose-asset";
 import { ConfirmTransactionStep } from "~/features/transfer-assets/steps/confirm-transaction";
-import type { HomeStackScreenProps } from "~/navigation/navigators/home-navigator";
+import { type AppStackScreenProps } from "~/navigation/navigators/app-navigator";
 
-export function TransferScreen({ navigation }: HomeStackScreenProps<"Transfer">) {
+export function TransferScreen({ navigation }: AppStackScreenProps<"Transfer">) {
   const [recipientAddress, setRecipientAddress] = useState<Address>();
   const [transferAsset, setTransferAsset] = useState<Asset>();
   const [transferValue, setTransferValue] = useState<bigint>();

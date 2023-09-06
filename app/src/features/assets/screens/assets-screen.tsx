@@ -10,10 +10,10 @@ import { ActionButton } from "~/features/assets/components/action-button";
 import { AssetsList } from "~/features/assets/components/assets-list";
 import { useCoinPrices } from "~/features/assets/hooks/use-coin-prices";
 import { useWeb3Auth } from "~/lib/web3auth";
-import { type HomeStackScreenProps } from "~/navigation/navigators/home-navigator";
+import { type TabScreenProps } from "~/navigation/navigators/app-navigator";
 import { shortenAddress } from "~/utils/shorten-address";
 
-export function AssetsScreen({ navigation }: HomeStackScreenProps<"Assets">) {
+export function AssetsScreen({ navigation }: TabScreenProps<"Assets">) {
   const { address } = useAccount();
   const { logout } = useWeb3Auth((state) => state.actions);
 
@@ -38,6 +38,7 @@ export function AssetsScreen({ navigation }: HomeStackScreenProps<"Assets">) {
         flexDirection="column"
         justifyContent="space-between"
         backgroundColor="$backgroundStrong"
+        edges={["top", "left", "right"]}
         padding="$4"
         space="$4"
       >

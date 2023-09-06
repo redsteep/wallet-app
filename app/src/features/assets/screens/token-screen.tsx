@@ -14,10 +14,10 @@ import { SelectionDot } from "~/features/assets/components/selection-dot";
 import { TokenStatistic } from "~/features/assets/components/token-statistic";
 import { useCoinData } from "~/features/assets/hooks/use-coin-data";
 import { useMarketChart } from "~/features/assets/hooks/use-market-charts";
-import { type HomeStackScreenProps } from "~/navigation/navigators/home-navigator";
+import { type AppStackScreenProps } from "~/navigation/navigators/app-navigator";
 import { commify } from "~/utils/commify";
 
-export function TokenScreen({ route, navigation }: HomeStackScreenProps<"Token">) {
+export function TokenScreen({ route, navigation }: AppStackScreenProps<"Token">) {
   const theme = useTheme();
 
   const { asset } = route.params;
