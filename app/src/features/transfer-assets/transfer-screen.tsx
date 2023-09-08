@@ -5,20 +5,21 @@ import { Pressable } from "react-native";
 import Animated, { FadeInRight, FadeOutLeft } from "react-native-reanimated";
 import { Text, XStack } from "tamagui";
 import { P, match } from "ts-pattern";
-import { type Address } from "viem";
 import { SafeAreaStack } from "~/components/safe-area-stack";
-import { type Asset } from "~/features/assets/assets";
 import { RecipientSelector } from "~/features/transfer-assets/components/recipient-selector";
 import { TransferContext } from "~/features/transfer-assets/context";
 import { ChooseAmountStep } from "~/features/transfer-assets/steps/choose-amount";
 import { ChooseAssetStep } from "~/features/transfer-assets/steps/choose-asset";
 import { ConfirmTransactionStep } from "~/features/transfer-assets/steps/confirm-transaction";
-import type { HomeStackScreenProps } from "~/navigation/navigators/home-navigator";
+import { type AppStackScreenProps } from "~/navigation/navigators/app-navigator";
 
-export function TransferScreen({ navigation }: HomeStackScreenProps<"Transfer">) {
-  const [recipientAddress, setRecipientAddress] = useState<Address>();
-  const [transferAsset, setTransferAsset] = useState<Asset>();
-  const [transferValue, setTransferValue] = useState<bigint>();
+export function TransferScreen({
+  route: { params },
+  navigation,
+}: AppStackScreenProps<"Transfer">) {
+  const [recipientAddress, setRecipientAddress] = useState(params?.recipientAddress);
+  const [transferAsset, setTransferAsset] = useState(params?.asset);
+  const [transferValue, setTransferValue] = useState(params?.value);
 
   return (
     <TransferContext.Provider
