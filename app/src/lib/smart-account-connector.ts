@@ -136,32 +136,43 @@ export class SmartAccountConnector extends Connector<
           transport: http(this.options.paymasterUrl),
         });
 
-        this.#provider = this.#provider.withPaymasterMiddleware({
-          dummyPaymasterDataMiddleware: async () => ({
+        this.#provider = this.#provider
+          // no-op gas estimator
+          .withGasEstimator(async () => ({
             callGasLimit: 0n,
             preVerificationGas: 0n,
             verificationGasLimit: 0n,
-            paymasterAndData: "0x",
-          }),
+          }))
+          .withPaymasterMiddleware({
+            dummyPaymasterDataMiddleware: async (struct) => {
+              const userOperation = await resolveProperties(struct);
 
-          paymasterDataMiddleware: async (struct) => {
-            const userOperation: UserOperationRequest = deepHexlify(
-              await resolveProperties(struct),
-            );
+              return {
+                callGasLimit: userOperation.callGasLimit ?? 0n,
+                preVerificationGas: userOperation.preVerificationGas ?? 0n,
+                verificationGasLimit: userOperation.verificationGasLimit ?? 0n,
+                paymasterAndData: userOperation.paymasterAndData ?? "0x",
+              };
+            },
 
-            return await paymasterClient.request<SponsorUserOperationRequest>({
-              method: "pm_sponsorUserOperation",
-              params: [
-                userOperation,
-                this.options.entryPointAddress,
-                {
-                  type: "erc20token",
-                  token: this.options.paymasterTokenAddress!,
-                },
-              ],
-            });
-          },
-        });
+            paymasterDataMiddleware: async (struct) => {
+              const userOperation: UserOperationRequest = deepHexlify(
+                await resolveProperties(struct),
+              );
+
+              return await paymasterClient.request<SponsorUserOperationRequest>({
+                method: "pm_sponsorUserOperation",
+                params: [
+                  userOperation,
+                  this.options.entryPointAddress,
+                  {
+                    type: "erc20token",
+                    token: this.options.paymasterTokenAddress!,
+                  },
+                ],
+              });
+            },
+          });
       }
     }
     return this.#provider;
