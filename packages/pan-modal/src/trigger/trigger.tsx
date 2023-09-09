@@ -18,16 +18,12 @@ import {
 import { PanModalTriggerContext } from "./context";
 
 interface PanModalTriggerRootProps extends React.PropsWithChildren<ViewProps> {
-  onTriggerPress?: () => void;
+  onPress?: () => void;
 }
 
-export const PanModalTriggerRoot = forwardRef(
-  (
-    { onTriggerPress, style, children, ...props }: PanModalTriggerRootProps,
-    _: unknown,
-  ) => {
+export const PanModalTriggerRoot = forwardRef<unknown, PanModalTriggerRootProps>(
+  ({ onPress, style, children, ...props }, _) => {
     const id = useId();
-
     const { triggerState, presentationState } = usePanModalContext();
 
     const ref = useAnimatedRef<ElementRef<typeof Animated.View>>();
@@ -53,7 +49,7 @@ export const PanModalTriggerRoot = forwardRef(
       }
 
       triggerState.value = newTriggerState;
-      requestAnimationFrame(() => onTriggerPress?.());
+      requestAnimationFrame(() => onPress?.());
     };
 
     const tapGesture = useMemo(() => {

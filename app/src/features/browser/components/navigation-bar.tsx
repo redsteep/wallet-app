@@ -1,6 +1,5 @@
-import Ionicons from "@expo/vector-icons/Ionicons";
-import { useFocusEffect } from "@react-navigation/native";
-import { useCallback, useRef, useState, type ElementRef } from "react";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import { useEffect, useRef, useState, type ElementRef } from "react";
 import Animated, {
   FadeInLeft,
   FadeInRight,
@@ -10,22 +9,27 @@ import Animated, {
 } from "react-native-reanimated";
 import type WebView from "react-native-webview";
 import { type WebViewNavigation } from "react-native-webview";
-import { Button, Input, XStack, styled } from "tamagui";
+import { Button, Input, XStack, styled, useTheme } from "tamagui";
 import { SafeAreaStack } from "~/components/safe-area-stack";
-import { createGoogleSearchURL, createNormalizedURL } from "~/features/browser/url-utils";
+import {
+  createGoogleSearchURL,
+  createNormalizedURL,
+} from "~/features/browser/url-helper";
 
 const AnimatedInput = Animated.createAnimatedComponent(Input);
 const AnimatedButton = Animated.createAnimatedComponent(Button);
 const AnimatedXStack = Animated.createAnimatedComponent(XStack);
 
-const NavigationButton = styled(AnimatedXStack, {
+const NavigationButton = styled(XStack, {
   width: "$3",
   height: "$3",
+
   alignItems: "center",
   justifyContent: "center",
+  borderRadius: "$12",
+
   hoverStyle: { backgroundColor: "$backgroundHover" },
   pressStyle: { backgroundColor: "$backgroundPress" },
-  borderRadius: "$12",
 
   variants: {
     disabled: {
@@ -44,20 +48,29 @@ const NavigationButton = styled(AnimatedXStack, {
 interface NavigationBarProps {
   url?: URL;
   webViewRef: React.RefObject<WebView>;
-  webViewState?: WebViewNavigation;
+  navigationState?: WebViewNavigation;
   onNavigate: (url: URL) => void;
 }
 
 export function NavigationBar({
   url,
   webViewRef,
-  webViewState,
+  navigationState,
   onNavigate,
 }: NavigationBarProps) {
-  const inputRef = useRef<ElementRef<typeof Input>>(null);
+  const theme = useTheme();
 
+  const inputRef = useRef<ElementRef<typeof Input>>(null);
   const [inputValue, setInputValue] = useState<string>();
   const [isInputFocused, setIsInputFocused] = useState(false);
+
+  useEffect(() => {
+    if (typeof url !== "undefined") {
+      inputRef.current?.blur();
+    } else {
+      inputRef.current?.focus();
+    }
+  }, [url]);
 
   const handleOnSubmit = () => {
     if (inputValue) {
@@ -66,7 +79,7 @@ export function NavigationBar({
   };
 
   const handleOnFocus = () => {
-    setInputValue(webViewState?.url);
+    setInputValue(navigationState?.url);
     setIsInputFocused(true);
   };
 
@@ -74,63 +87,52 @@ export function NavigationBar({
     setIsInputFocused(false);
   };
 
-  useFocusEffect(
-    useCallback(() => {
-      inputRef.current?.focus();
-    }, []),
-  );
-
   return (
     <SafeAreaStack
       flex={0}
       flexDirection="row"
       alignItems="center"
-      marginVertical="$3"
       marginHorizontal="$4"
+      marginVertical="$3"
       edges={["top"]}
       space="$3"
     >
       {url && !isInputFocused && (
-        <AnimatedXStack space="$1.5" exiting={SlideOutLeft}>
+        <AnimatedXStack
+          space="$2"
+          marginLeft="$-2"
+          entering={FadeInLeft.springify()
+            .mass(0.15)
+            .damping(8)
+            .stiffness(60)
+            .overshootClamping(1)}
+          exiting={SlideOutLeft}
+        >
           <NavigationButton
-            disabled={!webViewState?.canGoBack}
+            disabled={!navigationState?.canGoBack}
             onPress={() => webViewRef.current?.goBack()}
-            entering={FadeInLeft.springify()
-              .mass(0.15)
-              .damping(8)
-              .stiffness(60)
-              .overshootClamping(1)}
           >
-            <Ionicons name="arrow-back" size={24} />
+            <MaterialCommunityIcons name="arrow-left" size={24} />
           </NavigationButton>
 
           <NavigationButton
-            disabled={!webViewState?.canGoForward}
+            disabled={!navigationState?.canGoForward}
             onPress={() => webViewRef.current?.goForward()}
-            entering={FadeInLeft.delay(25)
-              .springify()
-              .mass(0.15)
-              .damping(8)
-              .stiffness(60)
-              .overshootClamping(1)}
           >
-            <Ionicons name="arrow-forward" size={24} />
+            <MaterialCommunityIcons name="arrow-right" size={24} />
           </NavigationButton>
 
           <NavigationButton
             onPress={() =>
-              webViewState?.loading
+              navigationState?.loading
                 ? webViewRef.current?.stopLoading()
                 : webViewRef.current?.reload()
             }
-            entering={FadeInLeft.delay(50)
-              .springify()
-              .mass(0.15)
-              .damping(8)
-              .stiffness(60)
-              .overshootClamping(1)}
           >
-            <Ionicons name={webViewState?.loading ? "close" : "reload"} size={20} />
+            <MaterialCommunityIcons
+              name={navigationState?.loading ? "close" : "reload"}
+              size={24}
+            />
           </NavigationButton>
         </AnimatedXStack>
       )}
@@ -141,20 +143,21 @@ export function NavigationBar({
         size="$4"
         fontSize="$6"
         fontWeight="600"
+        textAlign={isInputFocused ? "left" : "center"}
         inputMode="url"
         keyboardType="url"
         textContentType="URL"
         returnKeyType="go"
-        placeholder="Search or Enter URL"
-        autoCapitalize="none"
         autoCorrect={false}
+        autoCapitalize="none"
         selectTextOnFocus={true}
-        textAlign={isInputFocused ? "left" : "center"}
+        selectionColor={theme.color6.get()}
         value={isInputFocused ? inputValue : url?.hostname}
+        placeholder="Search or Enter URL"
         onChangeText={setInputValue}
+        onSubmitEditing={handleOnSubmit}
         onFocus={handleOnFocus}
         onBlur={handleOnBlur}
-        onSubmitEditing={handleOnSubmit}
         layout={Layout.springify()
           .mass(0.15)
           .damping(8)
@@ -166,7 +169,10 @@ export function NavigationBar({
         <AnimatedButton
           size="$4"
           transparent
-          onPress={() => inputRef.current?.blur()}
+          onPress={() => {
+            inputRef.current?.blur();
+            setIsInputFocused(false);
+          }}
           entering={FadeInRight.springify()
             .mass(0.15)
             .damping(8)

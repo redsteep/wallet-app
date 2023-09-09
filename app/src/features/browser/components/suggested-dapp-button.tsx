@@ -11,19 +11,17 @@ export function DappButton({ title, href, onPress }: DappButtonProps) {
   return (
     <YStack
       flex={1}
-      onPress={onPress}
       alignItems="center"
+      justifyContent="center"
+      padding="$3"
+      space="$2"
+      backgroundColor="$background"
+      borderRadius="$8"
       hoverStyle={{ backgroundColor: "$backgroundHover" }}
       pressStyle={{ backgroundColor: "$backgroundPress" }}
-      borderRadius="$8"
-      padding="$2"
-      space="$2"
+      onPress={onPress}
     >
-      <Image
-        style={{ width: 48, height: 48 }}
-        source={{ uri: getFaviconUrl(href) }}
-        cachePolicy="memory-disk"
-      />
+      <Image style={{ width: 48, height: 48 }} source={{ uri: getFaviconUrl(href) }} />
       <Text fontSize="$4" fontWeight="600">
         {title}
       </Text>

@@ -14,24 +14,26 @@ import {
 import { PanModalProvider } from "@wallet/pan-modal";
 import { useTheme } from "tamagui";
 import { type Address } from "viem";
-import type { Asset } from "~/features/assets/assets";
-import { AssetsScreen } from "~/features/assets/screens/assets-screen";
-import { TokenScreen } from "~/features/assets/screens/token-screen";
+import { ActivityScreen } from "~/features/activity/activity-screen";
+import type { Asset } from "~/features/assets";
+import { AssetsScreen } from "~/features/assets/assets-screen";
 import { BrowserScreen } from "~/features/browser/browser-screen";
-import { ReceiveScreen } from "~/features/receive-assets/receive-screen";
-import { TransferScreen } from "~/features/transfer-assets/transfer-screen";
+import { ReceiveScreen } from "~/features/receive/receive-screen";
+import { TokenScreen } from "~/features/token/token-screen";
+import { TransferScreen } from "~/features/transfer/transfer-screen";
 
 const Tab = createBottomTabNavigator<TabParamList>();
 const Stack = createNativeStackNavigator<AppStackParamList>();
 
 export type TabParamList = {
+  Activity: undefined;
   Assets: undefined;
   Browser: undefined;
 };
 
 export type AppStackParamList = {
   Tabs: NavigatorScreenParams<TabParamList>;
-  Token: { asset: Asset };
+  Token: { token: Asset };
   Receive: undefined;
   Transfer?: { recipientAddress?: Address; asset?: Asset; value?: bigint };
 };
@@ -70,6 +72,7 @@ function TabNavigator() {
 
   return (
     <Tab.Navigator
+      initialRouteName="Assets"
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: theme.color.get(),
@@ -77,6 +80,15 @@ function TabNavigator() {
         tabBarLabel: () => null,
       }}
     >
+      <Tab.Screen
+        name="Activity"
+        component={ActivityScreen}
+        options={{
+          tabBarIcon: ({ focused, color }) => (
+            <Ionicons name={focused ? "time" : "time-outline"} color={color} size={24} />
+          ),
+        }}
+      />
       <Tab.Screen
         name="Assets"
         component={AssetsScreen}
@@ -94,7 +106,6 @@ function TabNavigator() {
         name="Browser"
         component={BrowserScreen}
         options={{
-          unmountOnBlur: true,
           tabBarIcon: ({ focused, color }) => (
             <Ionicons
               name={focused ? "compass" : "compass-outline"}

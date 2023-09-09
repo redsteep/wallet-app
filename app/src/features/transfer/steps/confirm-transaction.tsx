@@ -13,8 +13,7 @@ import {
   useContractWrite,
   useSendTransaction,
 } from "wagmi";
-import { NotDeployedWarning } from "~/features/transfer-assets/components/not-deployed-warning";
-import { useTransferContext } from "~/features/transfer-assets/context";
+import { useTransferContext } from "~/features/transfer/context";
 import { useUserPreferences } from "~/lib/user-preferences";
 import { shortenAddress } from "~/utils/shorten-address";
 
@@ -237,8 +236,6 @@ export function ConfirmTransactionStep() {
           </XStack>
         </YStack>
       </YStack>
-
-      <NotDeployedWarning />
 
       <Theme name="dark">
         <Button

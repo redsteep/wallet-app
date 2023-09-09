@@ -13,7 +13,7 @@ import type { SelectionDotProps } from "react-native-graph";
 export const CIRCLE_RADIUS = 5;
 export const CIRCLE_RADIUS_MULTIPLIER = 3;
 
-export function SelectionDot({
+export function GraphSelectionDot({
   isActive,
   color,
   circleX,

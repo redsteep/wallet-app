@@ -5,8 +5,8 @@ import { Button, Text, Theme, XStack, YStack } from "tamagui";
 import { P, match } from "ts-pattern";
 import { parseUnits } from "viem";
 import { useAccount, useBalance } from "wagmi";
-import { TokenRow } from "~/features/assets/components/token-row";
-import { useTransferContext } from "~/features/transfer-assets/context";
+import { TokenButton } from "~/features/token/components/token-button";
+import { useTransferContext } from "~/features/transfer/context";
 import { chunkArray } from "~/utils/chunk-array";
 
 const symbolChunks = chunkArray("123456789.0<".split(""), 3);
@@ -109,12 +109,11 @@ export function ChooseAmountStep() {
             padding="$3"
             space="$2"
           >
-            <TokenRow
-              asset={transferAsset}
-              onPress={actions.setTransferAsset}
-              trimDecimals={false}
-              showMarketData={false}
-              asTrigger={false}
+            <TokenButton
+              token={transferAsset}
+              onPress={() => actions.setTransferAsset()}
+              trimBalanceDecimals={false}
+              showFiatPrice={false}
             />
 
             {/* <Theme inverse>

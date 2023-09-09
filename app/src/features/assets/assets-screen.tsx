@@ -5,21 +5,34 @@ import { Text, XStack, YStack } from "tamagui";
 import { useAccount } from "wagmi";
 import { FadingScrollView } from "~/components/fading-scroll-view";
 import { SafeAreaStack } from "~/components/safe-area-stack";
-import { ownedAssets } from "~/features/assets/assets";
+import { type Asset } from "~/features/assets";
 import { ActionButton } from "~/features/assets/components/action-button";
-import { AssetsList } from "~/features/assets/components/assets-list";
-import { useCoinPrices } from "~/features/assets/hooks/use-coin-prices";
+import { TokenButton } from "~/features/token/components/token-button";
+import { useTokenPrices } from "~/features/token/hooks/use-token-prices";
 import { useWeb3Auth } from "~/lib/web3auth";
 import { type TabScreenProps } from "~/navigation/navigators/app-navigator";
 import { shortenAddress } from "~/utils/shorten-address";
+
+// TODO: move away from predefined assets
+export const ownedAssets: Asset[] = [
+  {
+    tokenName: "Ethereum",
+    tokenImage: require("assets/ethereum.png"),
+    coinGeckoId: "ethereum",
+  },
+  {
+    tokenName: "Stackup Test Token",
+    tokenAddress: "0x3870419Ba2BBf0127060bCB37f69A1b1C090992B",
+  },
+];
 
 export function AssetsScreen({ navigation }: TabScreenProps<"Assets">) {
   const { address } = useAccount();
   const { logout } = useWeb3Auth((state) => state.actions);
 
-  const { data: tokenPrices } = useCoinPrices({
+  const { data: tokenPrices } = useTokenPrices({
     address: address!,
-    assets: ownedAssets.filter((asset) => !!asset.coinGeckoId),
+    tokens: ownedAssets.filter((asset) => !!asset.coinGeckoId),
     againstCurrency: "usd",
   });
 
@@ -59,28 +72,40 @@ export function AssetsScreen({ navigation }: TabScreenProps<"Assets">) {
         </XStack>
 
         <FadingScrollView>
-          <AssetsList
-            onPress={(asset) => navigation.navigate("Token", { asset })}
-            asTrigger
-          />
+          <YStack space="$4">
+            <Text fontSize="$6" fontWeight="600">
+              Tokens
+            </Text>
+
+            {ownedAssets.map((token, idx) => (
+              <TokenButton
+                key={idx}
+                token={token}
+                onPress={() => navigation.navigate("Token", { token })}
+                wrapWithPanTrigger
+                trimBalanceDecimals
+                showFiatPrice
+              />
+            ))}
+          </YStack>
         </FadingScrollView>
 
         <XStack alignItems="center" justifyContent="space-between" space="$3">
-          <ActionButton onTriggerPress={() => navigation.navigate("Receive")}>
+          <ActionButton onPress={() => navigation.navigate("Receive")}>
             <ActionButton.Icon backgroundColor="#49CF57">
               <Ionicons name="arrow-down" color="white" size={24} />
             </ActionButton.Icon>
             <ActionButton.Text>Receive</ActionButton.Text>
           </ActionButton>
 
-          <ActionButton onTriggerPress={() => navigation.navigate("Transfer")}>
+          <ActionButton onPress={() => navigation.navigate("Transfer")}>
             <ActionButton.Icon backgroundColor="#119BFF">
               <Ionicons name="arrow-up" color="white" size={24} />
             </ActionButton.Icon>
             <ActionButton.Text>Send</ActionButton.Text>
           </ActionButton>
 
-          <ActionButton onTriggerPress={() => navigation.navigate("Transfer")}>
+          <ActionButton onPress={() => navigation.navigate("Transfer")}>
             <ActionButton.Icon backgroundColor="#B3B3B3">
               <Ionicons name="swap-vertical" color="white" size={24} />
             </ActionButton.Icon>

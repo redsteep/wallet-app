@@ -11,6 +11,7 @@ import {
 import { type WebViewNavigationEvent } from "react-native-webview/lib/WebViewTypes";
 import { YStack } from "tamagui";
 import { useAccount } from "wagmi";
+import { FadingScrollView } from "~/components/fading-scroll-view";
 import { NavigationBar } from "~/features/browser/components/navigation-bar";
 import { SuggestedDapps } from "~/features/browser/components/suggested-dapps";
 import { type SmartAccountConnector } from "~/lib/smart-account-connector";
@@ -131,7 +132,7 @@ export function BrowserScreen() {
       <NavigationBar
         url={currentUrl}
         webViewRef={webViewRef}
-        webViewState={navigationState}
+        navigationState={navigationState}
         onNavigate={setCurrentUrl}
       />
 
@@ -142,11 +143,13 @@ export function BrowserScreen() {
           startInLoadingState
           pullToRefreshEnabled
           onLoad={handleWebViewLoad}
-          onMessage={handleWebViewMessage}
           onNavigationStateChange={setNavigationState}
+          onMessage={handleWebViewMessage}
         />
       ) : (
-        <SuggestedDapps onNavigate={setCurrentUrl} />
+        <FadingScrollView keyboardDismissMode="interactive">
+          <SuggestedDapps onNavigate={setCurrentUrl} />
+        </FadingScrollView>
       )}
     </YStack>
   );

@@ -1,5 +1,5 @@
 import { Text, XStack, YStack } from "tamagui";
-import { DappButton } from "~/features/browser/components/dapp-button";
+import { DappButton } from "~/features/browser/components/suggested-dapp-button";
 
 const suggestedDapps = [
   {
