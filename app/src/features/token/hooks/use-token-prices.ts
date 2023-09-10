@@ -1,7 +1,7 @@
 import { useQuery } from "react-query";
-import type { Asset } from "~/features/assets";
-import { type FetchBalanceResult, fetchBalance } from "wagmi/actions";
 import { type Address } from "viem";
+import { fetchBalance, type FetchBalanceResult } from "wagmi/actions";
+import type { Asset } from "~/features/assets";
 
 export function useTokenPrices({
   tokens,
@@ -17,9 +17,9 @@ export function useTokenPrices({
   }
 
   return useQuery(
-    ["coin-prices", tokens, againstCurrency],
+    ["token-prices", tokens, againstCurrency],
     async ({ signal }) => {
-      const balances = await Promise.all(
+      const tokenBalances = await Promise.all(
         tokens.map((asset) =>
           fetchBalance({
             address: address!,
@@ -33,11 +33,14 @@ export function useTokenPrices({
       url.searchParams.append("vs_currencies", againstCurrency);
 
       const response = await fetch(url, { signal });
-      const json = await response.json();
+      if (!response.ok) {
+        return [];
+      }
 
-      return tokens.map<[FetchBalanceResult, number]>((asset, idx) => [
-        balances[idx],
-        json?.[asset.coinGeckoId!]?.[againstCurrency] ?? 0.0,
+      const responseJson = await response.json();
+      return tokens.map<[FetchBalanceResult, number]>((token, idx) => [
+        tokenBalances[idx],
+        responseJson[token.coinGeckoId!]?.[againstCurrency] ?? 0.0,
       ]);
     },
     {

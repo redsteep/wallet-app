@@ -1,4 +1,5 @@
 import * as WebBrowser from "expo-web-browser";
+import * as SecureStore from "expo-secure-store";
 
 import Web3Auth, { LOGIN_PROVIDER, OPENLOGIN_NETWORK } from "@web3auth/react-native-sdk";
 
@@ -10,10 +11,12 @@ import { useUserPreferences } from "~/lib/user-preferences";
 import { web3AuthRedirectUrl } from "~/navigation/linking";
 import { persistentZustandStorage } from "~/utils/persistent-zustand";
 
-const web3auth = new Web3Auth(WebBrowser, {
+const web3auth = new Web3Auth(WebBrowser, SecureStore, {
   clientId: WEB3AUTH_CLIENT_ID,
   network: OPENLOGIN_NETWORK.TESTNET,
 });
+
+web3auth.init();
 
 interface Web3AuthState {
   hasHydrated: boolean;
@@ -34,21 +37,21 @@ export const useWeb3Auth = create<Web3AuthState>()(
           setHasHydrated: (hasHydrated: boolean) => set({ hasHydrated }),
           loginWith: async (providerKey: string) => {
             try {
-              const loginResult = await web3auth.login({
+              await web3auth.login({
                 loginProvider: LOGIN_PROVIDER[providerKey as never],
                 redirectUrl: web3AuthRedirectUrl,
               });
-
-              if (loginResult.privKey) {
-                set({ privateKey: `0x${loginResult.privKey}` });
-              }
             } catch (error) {
               console.warn(error);
+            }
+
+            if (web3auth.privKey) {
+              set({ privateKey: `0x${web3auth.privKey}` });
             }
           },
           logout: async () => {
             try {
-              await web3auth.logout({ redirectUrl: web3AuthRedirectUrl });
+              await web3auth.logout();
             } catch (error) {
               console.warn(error);
             } finally {

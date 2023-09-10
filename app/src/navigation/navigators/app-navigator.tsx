@@ -11,9 +11,10 @@ import {
   createNativeStackNavigator,
   type NativeStackScreenProps,
 } from "@react-navigation/native-stack";
-import { PanModalProvider } from "@wallet/pan-modal";
+import { PanModal, PanModalProvider } from "@wallet/pan-modal";
 import { useTheme } from "tamagui";
 import { type Address } from "viem";
+import { TabHeader } from "~/components/tab-header";
 import { ActivityScreen } from "~/features/activity/activity-screen";
 import type { Asset } from "~/features/assets";
 import { AssetsScreen } from "~/features/assets/assets-screen";
@@ -71,50 +72,84 @@ function TabNavigator() {
   const theme = useTheme();
 
   return (
-    <Tab.Navigator
-      initialRouteName="Assets"
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: theme.color.get(),
-        tabBarInactiveTintColor: theme.color8.get(),
-        tabBarLabel: () => null,
-      }}
-    >
-      <Tab.Screen
-        name="Activity"
-        component={ActivityScreen}
-        options={{
-          tabBarIcon: ({ focused, color }) => (
-            <Ionicons name={focused ? "time" : "time-outline"} color={color} size={24} />
-          ),
+    <PanModal.Offscreen>
+      <Tab.Navigator
+        initialRouteName="Assets"
+        screenOptions={{
+          // FYI: https://reactnavigation.org/docs/7.x/bottom-tab-navigator#specify-a-height-in-headerstyle
+          header: () => <TabHeader />,
+          transitionSpec: {
+            animation: "spring",
+            config: {
+              mass: 0.5,
+              damping: 8,
+              stiffness: 100,
+              overshootClamping: true,
+            },
+          },
+          sceneStyleInterpolator: ({ current }) => ({
+            sceneStyle: {
+              backgroundColor: theme.backgroundStrong.get(),
+              opacity: current.interpolate({
+                inputRange: [-1, 0, 1],
+                outputRange: [0, 1, 0],
+              }),
+              transform: [
+                {
+                  translateX: current.interpolate({
+                    inputRange: [-1, 0, 1],
+                    outputRange: [-50, 1, 50],
+                  }),
+                },
+              ],
+            },
+          }),
+          tabBarActiveTintColor: theme.color.get(),
+          tabBarInactiveTintColor: theme.color8.get(),
+          tabBarLabel: () => null,
         }}
-      />
-      <Tab.Screen
-        name="Assets"
-        component={AssetsScreen}
-        options={{
-          tabBarIcon: ({ focused, color }) => (
-            <Ionicons
-              name={focused ? "wallet" : "wallet-outline"}
-              color={color}
-              size={24}
-            />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Browser"
-        component={BrowserScreen}
-        options={{
-          tabBarIcon: ({ focused, color }) => (
-            <Ionicons
-              name={focused ? "compass" : "compass-outline"}
-              color={color}
-              size={28}
-            />
-          ),
-        }}
-      />
-    </Tab.Navigator>
+      >
+        <Tab.Screen
+          name="Activity"
+          component={ActivityScreen}
+          options={{
+            tabBarIcon: ({ focused, color }) => (
+              <Ionicons
+                name={focused ? "time" : "time-outline"}
+                color={color}
+                size={24}
+              />
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="Assets"
+          component={AssetsScreen}
+          options={{
+            tabBarIcon: ({ focused, color }) => (
+              <Ionicons
+                name={focused ? "wallet" : "wallet-outline"}
+                color={color}
+                size={24}
+              />
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="Browser"
+          component={BrowserScreen}
+          options={{
+            headerShown: false,
+            tabBarIcon: ({ focused, color }) => (
+              <Ionicons
+                name={focused ? "compass" : "compass-outline"}
+                color={color}
+                size={28}
+              />
+            ),
+          }}
+        />
+      </Tab.Navigator>
+    </PanModal.Offscreen>
   );
 }

@@ -1,5 +1,6 @@
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { useEffect, useRef, useState, type ElementRef } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import { useEffect, useRef, useState, type ElementRef, useCallback } from "react";
 import Animated, {
   FadeInLeft,
   FadeInRight,
@@ -64,13 +65,15 @@ export function NavigationBar({
   const [inputValue, setInputValue] = useState<string>();
   const [isInputFocused, setIsInputFocused] = useState(false);
 
-  useEffect(() => {
-    if (typeof url !== "undefined") {
-      inputRef.current?.blur();
-    } else {
-      inputRef.current?.focus();
-    }
-  }, [url]);
+  useFocusEffect(
+    useCallback(() => {
+      if (typeof url !== "undefined") {
+        inputRef.current?.blur();
+      } else {
+        inputRef.current?.focus();
+      }
+    }, [url]),
+  );
 
   const handleOnSubmit = () => {
     if (inputValue) {

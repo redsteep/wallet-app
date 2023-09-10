@@ -1,5 +1,5 @@
 import { useQuery } from "react-query";
-import { type Address, useBalance } from "wagmi";
+import { useBalance, type Address } from "wagmi";
 
 interface UseTokenDataArgs {
   address?: Address;

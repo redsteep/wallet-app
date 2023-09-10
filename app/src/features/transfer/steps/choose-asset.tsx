@@ -1,6 +1,6 @@
 import { Text, YStack, useTheme } from "tamagui";
 import { FadingScrollView } from "~/components/fading-scroll-view";
-import { ownedAssets } from "~/features/assets/assets-screen";
+import { ownedAssets } from "~/features/assets";
 import { TokenButton } from "~/features/token/components/token-button";
 import { useTransferContext } from "~/features/transfer/context";
 
