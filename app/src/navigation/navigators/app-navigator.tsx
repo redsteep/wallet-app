@@ -81,10 +81,9 @@ function TabNavigator() {
           transitionSpec: {
             animation: "spring",
             config: {
-              mass: 0.5,
-              damping: 8,
-              stiffness: 100,
-              overshootClamping: true,
+              mass: 0.1,
+              damping: 6,
+              stiffness: 60,
             },
           },
           sceneStyleInterpolator: ({ current }) => ({

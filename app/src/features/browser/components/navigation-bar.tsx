@@ -1,6 +1,5 @@
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { useFocusEffect } from "@react-navigation/native";
-import { useEffect, useRef, useState, type ElementRef, useCallback } from "react";
+import { useEffect, useRef, useState, type ElementRef } from "react";
 import Animated, {
   FadeInLeft,
   FadeInRight,
@@ -50,7 +49,7 @@ interface NavigationBarProps {
   url?: URL;
   webViewRef: React.RefObject<WebView>;
   navigationState?: WebViewNavigation;
-  onNavigate: (url: URL) => void;
+  onNavigate: (url?: URL) => void;
 }
 
 export function NavigationBar({
@@ -65,15 +64,11 @@ export function NavigationBar({
   const [inputValue, setInputValue] = useState<string>();
   const [isInputFocused, setIsInputFocused] = useState(false);
 
-  useFocusEffect(
-    useCallback(() => {
-      if (typeof url !== "undefined") {
-        inputRef.current?.blur();
-      } else {
-        inputRef.current?.focus();
-      }
-    }, [url]),
-  );
+  useEffect(() => {
+    if (typeof url !== "undefined") {
+      inputRef.current?.blur();
+    }
+  }, [url]);
 
   const handleOnSubmit = () => {
     if (inputValue) {
@@ -124,19 +119,6 @@ export function NavigationBar({
           >
             <MaterialCommunityIcons name="arrow-right" size={24} />
           </NavigationButton>
-
-          <NavigationButton
-            onPress={() =>
-              navigationState?.loading
-                ? webViewRef.current?.stopLoading()
-                : webViewRef.current?.reload()
-            }
-          >
-            <MaterialCommunityIcons
-              name={navigationState?.loading ? "close" : "reload"}
-              size={24}
-            />
-          </NavigationButton>
         </AnimatedXStack>
       )}
 
@@ -168,7 +150,7 @@ export function NavigationBar({
           .overshootClamping(1)}
       />
 
-      {isInputFocused && (
+      {isInputFocused ? (
         <AnimatedButton
           size="$4"
           transparent
@@ -187,7 +169,20 @@ export function NavigationBar({
             Cancel
           </Button.Text>
         </AnimatedButton>
-      )}
+      ) : typeof url !== "undefined" ? (
+        <AnimatedXStack
+          entering={FadeInRight.springify()
+            .mass(0.15)
+            .damping(8)
+            .stiffness(60)
+            .overshootClamping(1)}
+          exiting={SlideOutRight}
+        >
+          <NavigationButton onPress={() => onNavigate(undefined)}>
+            <MaterialCommunityIcons name="close" size={24} />
+          </NavigationButton>
+        </AnimatedXStack>
+      ) : null}
     </SafeAreaStack>
   );
 }

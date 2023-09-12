@@ -29,7 +29,7 @@ export function TabHeader() {
   return (
     <SafeAreaStack
       flex={0}
-      paddingTop="$4"
+      paddingVertical="$4"
       paddingHorizontal="$4"
       backgroundColor="$backgroundStrong"
       edges={["top"]}

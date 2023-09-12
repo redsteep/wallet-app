@@ -8,8 +8,7 @@ import {
   type WebViewMessageEvent,
   type WebViewNavigation,
 } from "react-native-webview";
-import { type WebViewNavigationEvent } from "react-native-webview/lib/WebViewTypes";
-import { YStack } from "tamagui";
+import { YStack, ZStack } from "tamagui";
 import { useAccount } from "wagmi";
 import { FadingScrollView } from "~/components/fading-scroll-view";
 import { NavigationBar } from "~/features/browser/components/navigation-bar";
@@ -17,16 +16,22 @@ import { SuggestedDapps } from "~/features/browser/components/suggested-dapps";
 import { type SmartAccountConnector } from "~/lib/smart-account-connector";
 
 export function BrowserScreen() {
+  const { address, connector } = useAccount();
+
   const webViewRef = useRef<WebView>(null);
 
   const [currentUrl, setCurrentUrl] = useState<URL>();
   const [navigationState, setNavigationState] = useState<WebViewNavigation>();
 
-  const { address, connector } = useAccount();
+  const handleOnNavigate = (url?: URL) => {
+    setCurrentUrl(url);
 
-  const handleWebViewLoad = (event: WebViewNavigationEvent) => {
-    setNavigationState(event.nativeEvent);
+    if (typeof url === "undefined") {
+      setNavigationState(undefined);
+    }
+  };
 
+  const handleWebViewLoad = () => {
     if (webViewRef.current) {
       // TODO: Implement events
       webViewRef.current.injectJavaScript(`
@@ -133,23 +138,29 @@ export function BrowserScreen() {
         url={currentUrl}
         webViewRef={webViewRef}
         navigationState={navigationState}
-        onNavigate={setCurrentUrl}
+        onNavigate={handleOnNavigate}
       />
 
-      {currentUrl ? (
+      {typeof currentUrl !== "undefined" ? (
         <WebView
           ref={webViewRef}
           source={{ uri: currentUrl.toString() }}
-          startInLoadingState
-          pullToRefreshEnabled
+          startInLoadingState={true}
+          pullToRefreshEnabled={true}
+          automaticallyAdjustContentInsets={false}
           onLoad={handleWebViewLoad}
           onNavigationStateChange={setNavigationState}
           onMessage={handleWebViewMessage}
         />
       ) : (
-        <FadingScrollView keyboardDismissMode="interactive">
-          <SuggestedDapps onNavigate={setCurrentUrl} />
-        </FadingScrollView>
+        <ZStack flex={1}>
+          <FadingScrollView
+            keyboardDismissMode="interactive"
+            keyboardShouldPersistTaps="handled"
+          >
+            <SuggestedDapps onNavigate={setCurrentUrl} />
+          </FadingScrollView>
+        </ZStack>
       )}
     </YStack>
   );

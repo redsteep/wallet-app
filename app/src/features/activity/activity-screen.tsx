@@ -1,30 +1,79 @@
-import { Text, YStack } from "tamagui";
+import { useIsFocused } from "@react-navigation/native";
+import Animated, { FadeInUp, FadeOut, Layout } from "react-native-reanimated";
+import { Spinner, Text, XStack, YStack } from "tamagui";
 import { FadingScrollView } from "~/components/fading-scroll-view";
-import { ownedAssets } from "~/features/assets";
-import { TokenButton } from "~/features/token/components/token-button";
-import { type TabScreenProps } from "~/navigation/navigators/app-navigator";
+import { NoActivity } from "~/features/activity/components/no-activity";
+import { TransactionActivityEntry } from "~/features/activity/components/transaction-activity-entry";
+import { useTransactions } from "~/features/transactions";
 
-export function ActivityScreen({ navigation }: TabScreenProps<"Activity">) {
+const AnimatedYStack = Animated.createAnimatedComponent(YStack);
+
+export function ActivityScreen() {
+  const { pending, completed } = useTransactions((state) => state.transactions);
+
+  const hasAnyTransactions = pending.length > 0 || completed.length > 0;
+  const showTransactions = useIsFocused() && hasAnyTransactions;
+
+  if (!hasAnyTransactions) {
+    return <NoActivity />;
+  }
+
   return (
-    <YStack flex={1} backgroundColor="$backgroundStrong" padding="$4" space="$4">
+    showTransactions && (
       <FadingScrollView>
-        <YStack space="$4">
-          <Text fontSize="$6" fontWeight="600">
-            Tokens
-          </Text>
+        <AnimatedYStack
+          flex={1}
+          space="$4"
+          paddingHorizontal="$4"
+          exiting={FadeOut.delay(1000)}
+        >
+          {pending.length > 0 && (
+            <AnimatedYStack
+              space="$4"
+              entering={FadeInUp.springify()
+                .mass(0.15)
+                .damping(8)
+                .stiffness(60)
+                .overshootClamping(1)}
+              exiting={FadeOut.springify()
+                .mass(0.15)
+                .damping(8)
+                .stiffness(60)
+                .overshootClamping(1)}
+            >
+              <XStack space="$3">
+                <Text fontSize="$6" fontWeight="600">
+                  Pending
+                </Text>
+                <Spinner />
+              </XStack>
 
-          {ownedAssets.map((token, idx) => (
-            <TokenButton
-              key={idx}
-              token={token}
-              onPress={() => navigation.navigate("Token", { token })}
-              wrapWithPanTrigger
-              trimBalanceDecimals
-              showFiatPrice
-            />
-          ))}
-        </YStack>
+              {pending.map((tx) => (
+                <TransactionActivityEntry key={tx.id} transaction={tx} />
+              ))}
+            </AnimatedYStack>
+          )}
+
+          {completed.length > 0 && (
+            <AnimatedYStack
+              space="$4"
+              layout={Layout.springify()
+                .mass(0.15)
+                .damping(8)
+                .stiffness(60)
+                .overshootClamping(1)}
+            >
+              <Text fontSize="$6" fontWeight="600">
+                Complete
+              </Text>
+
+              {[...completed].reverse().map((tx) => (
+                <TransactionActivityEntry key={tx.hash} transaction={tx} />
+              ))}
+            </AnimatedYStack>
+          )}
+        </AnimatedYStack>
       </FadingScrollView>
-    </YStack>
+    )
   );
 }

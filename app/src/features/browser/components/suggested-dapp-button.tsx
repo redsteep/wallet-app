@@ -8,30 +8,26 @@ interface DappButtonProps {
 }
 
 export function DappButton({ title, href, onPress }: DappButtonProps) {
+  const faviconUrl = new URL("https://www.google.com/s2/favicons");
+  faviconUrl.searchParams.append("domain", href);
+  faviconUrl.searchParams.append("sz", "48");
+
   return (
     <YStack
       flex={1}
       alignItems="center"
       justifyContent="center"
-      padding="$3"
-      space="$2"
-      backgroundColor="$background"
+      paddingVertical="$3"
+      space="$2.5"
       borderRadius="$8"
       hoverStyle={{ backgroundColor: "$backgroundHover" }}
       pressStyle={{ backgroundColor: "$backgroundPress" }}
       onPress={onPress}
     >
-      <Image style={{ width: 48, height: 48 }} source={{ uri: getFaviconUrl(href) }} />
-      <Text fontSize="$4" fontWeight="600">
+      <Image style={{ width: 48, height: 48 }} source={{ uri: faviconUrl.toString() }} />
+      <Text fontSize="$4" fontWeight="500" adjustsFontSizeToFit>
         {title}
       </Text>
     </YStack>
   );
-}
-
-function getFaviconUrl(href: string) {
-  const url = new URL("https://www.google.com/s2/favicons");
-  url.searchParams.append("domain", href);
-  url.searchParams.append("sz", "48");
-  return url.toString();
 }

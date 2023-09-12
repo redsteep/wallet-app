@@ -1,5 +1,5 @@
 import { ImpactFeedbackStyle, impactAsync } from "expo-haptics";
-import { useDeferredValue, useState } from "react";
+import { useState } from "react";
 import Animated, { FadeInDown, FadeOutDown } from "react-native-reanimated";
 import { Button, Text, Theme, XStack, YStack } from "tamagui";
 import { P, match } from "ts-pattern";
@@ -24,7 +24,7 @@ export function ChooseAmountStep() {
   });
 
   const [inputValue, setInputValue] = useState("0");
-  const parsedUnits = useDeferredValue(parseUnits(inputValue, data?.decimals ?? 18));
+  const parsedUnits = parseUnits(inputValue, data?.decimals ?? 18);
 
   const enoughBalance = parsedUnits <= (data?.value ?? 0n);
   const validAmount = parsedUnits > 0 && enoughBalance;

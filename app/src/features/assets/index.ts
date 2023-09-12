@@ -8,15 +8,16 @@ export interface Asset {
   coinGeckoId?: string;
 }
 
+export const nativeToken: Asset = {
+  tokenName: "Ethereum",
+  tokenImage: require("assets/ethereum.png"),
+  coinGeckoId: "ethereum",
+};
+
 // TODO: move away from predefined assets
-export const ownedAssets: Asset[] = [
-  {
-    tokenName: "Ethereum",
-    tokenImage: require("assets/ethereum.png"),
-    coinGeckoId: "ethereum",
-  },
-  {
-    tokenName: "Stackup Test Token",
-    tokenAddress: "0x3870419Ba2BBf0127060bCB37f69A1b1C090992B",
-  },
-];
+export const stackupToken: Asset = {
+  tokenName: "Stackup Test Token",
+  tokenAddress: "0x3870419Ba2BBf0127060bCB37f69A1b1C090992B",
+};
+
+export const ownedAssets = [nativeToken, stackupToken];

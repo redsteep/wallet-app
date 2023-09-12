@@ -1,24 +1,14 @@
 import { Stack, Text, styled, withStaticProperties } from "@tamagui/web";
-import { PanModal } from "@wallet/pan-modal";
 
-export const ButtonFrame = styled(PanModal.Trigger, {
-  flex: 1,
-  flexDirection: "column",
+export const ButtonFrame = styled(Stack, {
   alignItems: "center",
-
   backgroundColor: "$background",
   borderRadius: "$6",
   userSelect: "none",
-
   padding: "$2.5",
   space: "$2",
-
-  hoverStyle: {
-    backgroundColor: "$backgroundHover",
-  },
-  pressStyle: {
-    backgroundColor: "$backgroundPress",
-  },
+  hoverStyle: { backgroundColor: "$backgroundHover" },
+  pressStyle: { backgroundColor: "$backgroundPress" },
 });
 
 export const ButtonText = styled(Text, {

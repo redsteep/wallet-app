@@ -128,6 +128,8 @@ export class SmartAccountConnector extends Connector<
         this.options.bundlerUrl,
         this.options.entryPointAddress,
         this.chains[0],
+        undefined,
+        { txMaxRetries: 100 },
       );
 
       if (this.options.paymasterUrl && this.options.paymasterTokenAddress) {
@@ -178,16 +180,15 @@ export class SmartAccountConnector extends Connector<
     return this.#provider;
   }
 
-  async getWalletClient({ chainId }: { chainId?: number } = {}): Promise<WalletClient> {
+  async getWalletClient(): Promise<WalletClient> {
     const [provider, account] = await Promise.all([
       this.getProvider(),
       this.getAccount(),
     ]);
-    const chain = this.chains.find((x) => x.id === chainId);
     if (!provider) throw new Error("Provider is required.");
     return createWalletClient({
       account,
-      chain,
+      chain: this.chains[0],
       transport: custom(provider),
     });
   }
