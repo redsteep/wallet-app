@@ -1,21 +1,19 @@
 import type { Address, Hash, Hex, Transaction, TransactionReceipt } from "viem";
 import type { Asset } from "~/features/assets";
 
-export interface BaseTransaction {
-  data?: Hex;
+export type TransactionRequest = {
   from: Address;
   to: Address;
-  value?: bigint;
   asset: Asset;
-}
+  value: bigint;
+  data?: Hex;
+};
 
-export type TransactionRequest = BaseTransaction;
-
-export interface PendingTransaction extends BaseTransaction {
+export type PendingTransaction = TransactionRequest & {
   id: string;
   paymasterApproveHash: Hash | null;
   transactionHash: Hash | null;
-}
+};
 
 export type CompletedTransaction = Omit<Transaction, "to"> &
   Pick<TransactionReceipt, "status"> & {

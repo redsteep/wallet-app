@@ -1,17 +1,25 @@
 import { nanoid } from "nanoid";
 import { match, P } from "ts-pattern";
-import { decodeEventLog, isAddressEqual, maxUint256 } from "viem";
+import {
+  decodeEventLog,
+  decodeFunctionData,
+  encodeFunctionData,
+  isAddressEqual,
+  maxUint256,
+} from "viem";
 import { erc20ABI, type Address } from "wagmi";
 import {
   fetchTransaction,
   readContract,
   sendTransaction,
+  SendTransactionArgs,
   waitForTransaction,
   writeContract,
 } from "wagmi/actions";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
+import { Asset } from "~/features/assets";
 import type {
   CompletedTransaction,
   PendingTransaction,
@@ -123,16 +131,46 @@ export const useTransactions = create<TransactionsState>()(
                   functionName: "approve",
                   args: [PAYMASTER_ADDRESS as Address, maxUint256],
                 });
-                return { ...transaction, paymasterApproveHash: hash };
+
+                return {
+                  ...transaction,
+                  paymasterApproveHash: hash,
+                };
               } else {
-                return { ...transaction, paymasterApproveHash: "0x" };
+                return {
+                  ...transaction,
+                  paymasterApproveHash: "0x",
+                };
               }
             },
 
             sendEthereumTransaction: async (transaction) => {
               console.debug(`Sending Ethereum transaction for ${transaction.id}`);
-              const { hash } = await sendTransaction(transaction);
-              return { ...transaction, transactionHash: hash };
+
+              const { hash } = await sendTransaction(
+                match<PendingTransaction, SendTransactionArgs>(transaction)
+                  .with({ asset: { type: "eth" } }, (request) => ({
+                    from: request.from,
+                    to: request.to,
+                    value: request.value,
+                  }))
+                  .with(
+                    { asset: { type: "erc20", tokenAddress: P.string } },
+                    (request) => ({
+                      from: request.from,
+                      to: request.asset.tokenAddress,
+                      data: request.data,
+                    }),
+                  )
+                  .otherwise(() => {
+                    throw new Error("Invalid asset");
+                  }),
+              );
+
+              return {
+                ...transaction,
+                transactionHash: hash,
+              };
             },
 
             waitForTransactionReceipt: async (transaction) => {
@@ -146,26 +184,26 @@ export const useTransactions = create<TransactionsState>()(
                 hash: transaction.transactionHash,
               });
 
-              let completedTransaction: CompletedTransaction = {
+              const completedTransaction: CompletedTransaction = {
                 status: receipt.status,
                 ...(await fetchTransaction({ hash: transaction.transactionHash })),
                 ...transaction,
               };
 
-              for (const log of receipt.logs) {
-                if (isAddressEqual(log.address, transaction.to)) {
-                  const topics = decodeEventLog({
-                    abi: erc20ABI,
-                    data: log.data,
-                    topics: log.topics,
-                  });
+              // for (const log of receipt.logs) {
+              //   if (isAddressEqual(log.address, transaction.to)) {
+              //     const topics = decodeEventLog({
+              //       abi: erc20ABI,
+              //       data: log.data,
+              //       topics: log.topics,
+              //     });
 
-                  if (topics.eventName === "Transfer") {
-                    completedTransaction = { ...completedTransaction, ...topics.args };
-                    break;
-                  }
-                }
-              }
+              //     if (topics.eventName === "Transfer") {
+              //       completedTransaction = { ...completedTransaction, ...topics.args };
+              //       break;
+              //     }
+              //   }
+              // }
 
               set((state) => {
                 state.transactions.completed.push(completedTransaction);

@@ -37,6 +37,7 @@ export type AppStackParamList = {
   Token: { token: Asset };
   Receive: undefined;
   Transfer?: { recipientAddress?: Address; asset?: Asset; value?: bigint };
+  // Transaction: { transactionHash: Hash };
 };
 
 export type TabScreenProps<T extends keyof TabParamList> = CompositeScreenProps<
@@ -62,6 +63,7 @@ export function AppNavigator() {
           <Stack.Screen name="Token" component={TokenScreen} />
           <Stack.Screen name="Receive" component={ReceiveScreen} />
           <Stack.Screen name="Transfer" component={TransferScreen} />
+          {/* <Stack.Screen name="Transaction" component={TransactionScreen} /> */}
         </Stack.Group>
       </Stack.Navigator>
     </PanModalProvider>

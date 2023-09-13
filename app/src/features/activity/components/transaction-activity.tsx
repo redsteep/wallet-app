@@ -13,24 +13,21 @@ import { shortenAddress } from "~/utils/shorten-address";
 
 const AnimatedXStack = Animated.createAnimatedComponent(XStack);
 
-interface TransactionActivityEntryProps {
+interface TransactionActivityProps {
   transaction: PendingTransaction | CompletedTransaction;
 }
 
-export function TransactionActivityEntry({ transaction }: TransactionActivityEntryProps) {
+export function TransactionActivity({ transaction }: TransactionActivityProps) {
   const { address } = useAccount();
-
-  const { data: token } = useToken({
-    address: transaction.asset.tokenAddress,
-  });
+  const { data: tokenData } = useToken({ address: transaction.asset.tokenAddress });
 
   const status = "status" in transaction ? transaction.status : "pending";
 
   const formattedUnits = parseFloat(
-    formatUnits(transaction.value ?? 0n, token?.decimals ?? 18),
+    transaction.value ? formatUnits(transaction.value, tokenData?.decimals ?? 18) : "0.0",
   ).toFixed(4);
 
-  const formattedValue = `${commify(formattedUnits)} ${token?.symbol}`;
+  const formattedValue = `${commify(formattedUnits)} ${tokenData?.symbol ?? "ETH"}`;
 
   return (
     <AnimatedXStack

@@ -102,7 +102,6 @@ export function FadingScrollView({
         end={{ x: 0, y: 0 }}
       />
 
-      {/* @ts-expect-error */}
       <Animated.ScrollView
         onScroll={scrollHandler}
         onContentSizeChange={handleContentSizeChange}

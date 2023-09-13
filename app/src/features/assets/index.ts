@@ -1,14 +1,16 @@
 import type { ImageSource } from "expo-image";
 import type { Address } from "viem";
 
-export interface Asset {
+export type Asset = {
+  type: "eth" | "erc20";
   tokenName: string;
-  tokenImage?: ImageSource;
   tokenAddress?: Address;
+  tokenImage?: ImageSource;
   coinGeckoId?: string;
-}
+};
 
 export const nativeToken: Asset = {
+  type: "eth",
   tokenName: "Ethereum",
   tokenImage: require("assets/ethereum.png"),
   coinGeckoId: "ethereum",
@@ -16,6 +18,7 @@ export const nativeToken: Asset = {
 
 // TODO: move away from predefined assets
 export const stackupToken: Asset = {
+  type: "erc20",
   tokenName: "Stackup Test Token",
   tokenAddress: "0x3870419Ba2BBf0127060bCB37f69A1b1C090992B",
 };

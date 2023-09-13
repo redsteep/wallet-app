@@ -1,19 +1,25 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { useNavigation } from "@react-navigation/native";
+import {
+  useFocusEffect,
+  useNavigation,
+  type NavigationProp,
+} from "@react-navigation/native";
 import { authenticateAsync } from "expo-local-authentication";
 import { useMutation } from "react-query";
 import { Button, Separator, Spinner, Text, Theme, XStack, YStack } from "tamagui";
 import { encodeFunctionData, formatUnits } from "viem";
 import { erc20ABI, useAccount, useBalance } from "wagmi";
 import { useTransactions } from "~/features/transactions";
+import { type TransactionRequest } from "~/features/transactions/types";
 import { useTransferContext } from "~/features/transfer/context";
 import { useUserPreferences } from "~/lib/user-preferences";
+import { type AppStackParamList } from "~/navigation/navigators/app-navigator";
 import { shortenAddress } from "~/utils/shorten-address";
 
 class LocalAuthenticationError extends Error {}
 
 export function ConfirmTransactionStep() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<AppStackParamList>>();
 
   const { address } = useAccount();
   const { hasEnabledBiometrics } = useUserPreferences();
@@ -27,7 +33,7 @@ export function ConfirmTransactionStep() {
     watch: true,
   });
 
-  const { isLoading, mutate } = useMutation(
+  const { isSuccess, isLoading, mutate } = useMutation(
     async () => {
       if (!address || !recipientAddress || !transferAsset || !transferValue) {
         return;
@@ -40,25 +46,22 @@ export function ConfirmTransactionStep() {
         }
       }
 
-      if (transferAsset.tokenAddress) {
-        sendTransaction({
-          from: address,
-          to: transferAsset.tokenAddress,
-          asset: transferAsset,
-          data: encodeFunctionData({
-            abi: erc20ABI,
-            functionName: "transfer",
-            args: [recipientAddress, transferValue],
-          }),
-        });
-      } else {
-        sendTransaction({
-          from: address,
-          to: recipientAddress,
-          asset: transferAsset,
-          value: transferValue,
+      const transactionRequest: TransactionRequest = {
+        from: address,
+        to: recipientAddress,
+        asset: transferAsset,
+        value: transferValue,
+      };
+
+      if (transferAsset.type === "erc20") {
+        transactionRequest.data = encodeFunctionData({
+          abi: erc20ABI,
+          functionName: "transfer",
+          args: [recipientAddress, transferValue],
         });
       }
+
+      sendTransaction(transactionRequest);
     },
     {
       onSettled(_, error) {
@@ -69,6 +72,12 @@ export function ConfirmTransactionStep() {
       },
     },
   );
+
+  useFocusEffect(() => () => {
+    if (isSuccess) {
+      requestAnimationFrame(() => navigation.navigate("Tabs", { screen: "Activity" }));
+    }
+  });
 
   return (
     <YStack flex={1} justifyContent="space-between" space="$4">
