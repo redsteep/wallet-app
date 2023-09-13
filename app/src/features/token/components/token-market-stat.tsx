@@ -2,14 +2,14 @@ import { Text, XStack } from "tamagui";
 import { P, match } from "ts-pattern";
 import { commify } from "~/utils/commify";
 
-interface TokenStatisticProps {
+interface TokenMarketStatProps {
   index: number;
   label: string;
   value: string | number;
   format?: "abbreviated" | "abbreviatedCurrency";
 }
 
-export function TokenStatistic({ index, label, value, format }: TokenStatisticProps) {
+export function TokenMarketStat({ index, label, value, format }: TokenMarketStatProps) {
   return (
     <XStack
       alignItems="center"

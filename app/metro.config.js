@@ -25,6 +25,11 @@ config.resolver.nodeModulesPaths = [
 // https://github.com/expo/expo/issues/23180
 config.resolver.sourceExts.push("mjs");
 
+// Fix Web3Auth
+config.resolver.extraNodeModules = {
+  crypto: require.resolve("expo-crypto"),
+};
+
 // Keep an eye out on this
 // https://docs.expo.dev/guides/customizing-metro/#tree-shaking-by-platform
 config.transformer.getTransformOptions = async () => ({

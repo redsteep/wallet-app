@@ -7,7 +7,7 @@ import { Dimensions, Pressable, Share, TouchableOpacity } from "react-native";
 import { Button, Text, Theme, XStack, YStack } from "tamagui";
 import { useAccount } from "wagmi";
 import { SafeAreaStack } from "~/components/safe-area-stack";
-import { QrCode } from "~/features/receive-assets/components/qr-code";
+import { QrCode } from "~/features/receive/components/qr-code";
 import { shortenAddress } from "~/utils/shorten-address";
 
 export function ReceiveScreen() {

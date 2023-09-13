@@ -1,6 +1,6 @@
 import { createContext, useContext } from "react";
 import type { Address } from "viem";
-import type { Asset } from "~/features/assets/assets";
+import type { Asset } from "~/features/assets";
 
 interface TransferContextType {
   recipientAddress?: Address;

@@ -10,8 +10,8 @@ import Animated, {
 import { useQuery } from "react-query";
 import { Stack, Text, XStack, YStack } from "tamagui";
 import { SafeAreaStack } from "~/components/safe-area-stack";
-import { AcceptTermsFlow } from "~/features/onboarding/setup-flows/accept-terms";
-import { EnableBiometricsFlow } from "~/features/onboarding/setup-flows/enable-biometrics";
+import { AcceptTermsFlow } from "~/features/onboarding/steps/accept-terms";
+import { EnableBiometricsFlow } from "~/features/onboarding/steps/enable-biometrics";
 import { useUserPreferences } from "~/lib/user-preferences";
 import { usePrevious } from "~/utils/hooks/use-previous";
 

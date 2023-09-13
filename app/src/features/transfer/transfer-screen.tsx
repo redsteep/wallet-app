@@ -6,11 +6,11 @@ import Animated, { FadeInRight, FadeOutLeft } from "react-native-reanimated";
 import { Text, XStack } from "tamagui";
 import { P, match } from "ts-pattern";
 import { SafeAreaStack } from "~/components/safe-area-stack";
-import { RecipientSelector } from "~/features/transfer-assets/components/recipient-selector";
-import { TransferContext } from "~/features/transfer-assets/context";
-import { ChooseAmountStep } from "~/features/transfer-assets/steps/choose-amount";
-import { ChooseAssetStep } from "~/features/transfer-assets/steps/choose-asset";
-import { ConfirmTransactionStep } from "~/features/transfer-assets/steps/confirm-transaction";
+import { RecipientSelector } from "~/features/transfer/components/recipient-selector";
+import { TransferContext } from "~/features/transfer/context";
+import { ChooseAmountStep } from "~/features/transfer/steps/choose-amount";
+import { ChooseAssetStep } from "~/features/transfer/steps/choose-asset";
+import { ConfirmTransactionStep } from "~/features/transfer/steps/confirm-transaction";
 import { type AppStackScreenProps } from "~/navigation/navigators/app-navigator";
 
 export function TransferScreen({

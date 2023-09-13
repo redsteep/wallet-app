@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "main": "src/index.ts",
   "peerDependencies": {
-    "@react-navigation/native": ">=5.0.0",
     "expo-haptics": ">=10.0.0",
     "expo-image": ">=1.0.0",
     "react": ">=16.0.0",

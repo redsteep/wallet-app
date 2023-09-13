@@ -4,15 +4,17 @@ interface MarketChartData {
   prices: [timestamp: number, price: number][];
 }
 
-export function useMarketChart({
-  coinGeckoId,
-  days,
-  againstCurrency = "usd",
-}: {
+interface UserMarketChartsArgs {
   coinGeckoId?: string;
   days: number | "max";
   againstCurrency?: string;
-}) {
+}
+
+export function useMarketCharts({
+  coinGeckoId,
+  days,
+  againstCurrency = "usd",
+}: UserMarketChartsArgs) {
   return useQuery(
     ["market-charts", coinGeckoId, days, againstCurrency],
     async ({ signal }) => {

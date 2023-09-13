@@ -1,12 +1,12 @@
 import { ImpactFeedbackStyle, impactAsync } from "expo-haptics";
-import { useDeferredValue, useState } from "react";
+import { useState } from "react";
 import Animated, { FadeInDown, FadeOutDown } from "react-native-reanimated";
 import { Button, Text, Theme, XStack, YStack } from "tamagui";
 import { P, match } from "ts-pattern";
 import { parseUnits } from "viem";
 import { useAccount, useBalance } from "wagmi";
-import { TokenRow } from "~/features/assets/components/token-row";
-import { useTransferContext } from "~/features/transfer-assets/context";
+import { TokenButton } from "~/features/token/components/token-button";
+import { useTransferContext } from "~/features/transfer/context";
 import { chunkArray } from "~/utils/chunk-array";
 
 const symbolChunks = chunkArray("123456789.0<".split(""), 3);
@@ -24,7 +24,7 @@ export function ChooseAmountStep() {
   });
 
   const [inputValue, setInputValue] = useState("0");
-  const parsedUnits = useDeferredValue(parseUnits(inputValue, data?.decimals ?? 18));
+  const parsedUnits = parseUnits(inputValue, data?.decimals ?? 18);
 
   const enoughBalance = parsedUnits <= (data?.value ?? 0n);
   const validAmount = parsedUnits > 0 && enoughBalance;
@@ -109,12 +109,11 @@ export function ChooseAmountStep() {
             padding="$3"
             space="$2"
           >
-            <TokenRow
-              asset={transferAsset}
-              onPress={actions.setTransferAsset}
-              trimDecimals={false}
-              showMarketData={false}
-              asTrigger={false}
+            <TokenButton
+              token={transferAsset}
+              onPress={() => actions.setTransferAsset()}
+              trimBalanceDecimals={false}
+              showFiatPrice={false}
             />
 
             {/* <Theme inverse>

@@ -1,11 +1,53 @@
 import { useQuery } from "react-query";
+import { useBalance, type Address } from "wagmi";
 
-export interface CoinData {
+interface UseTokenDataArgs {
+  address?: Address;
+  tokenAddress?: Address;
+  coinGeckoId?: string;
+}
+
+export function useTokenData({ address, tokenAddress, coinGeckoId }: UseTokenDataArgs) {
+  const { data: tokenBalance } = useBalance({
+    address,
+    token: tokenAddress,
+    watch: true,
+  });
+
+  const { data: tokenData } = useQuery(
+    ["token-data", coinGeckoId],
+    async ({ signal }) => {
+      const url = new URL(`https://api.coingecko.com/api/v3/coins/${coinGeckoId}`);
+      url.searchParams.append("tickers", "false");
+      url.searchParams.append("localization", "false");
+      url.searchParams.append("community_data", "false");
+      url.searchParams.append("developer_data", "false");
+
+      const response = await fetch(url, { signal });
+      return (await response.json()) as CoinGeckoData;
+    },
+    {
+      enabled: Boolean(coinGeckoId),
+      refetchInterval: 60 * 1000,
+      staleTime: 60 * 1000,
+    },
+  );
+
+  return {
+    tokenData,
+    tokenBalance,
+    currentFiatPrice: tokenData?.market_data?.current_price.usd ?? 0.0,
+    priceChangePercentageIn24h:
+      tokenData?.market_data?.price_change_percentage_24h ?? 0.0,
+  };
+}
+
+export interface CoinGeckoData {
   id: string;
   symbol: string;
   name: string;
   description: Description;
-  links: CoinGeckoCoinDataLinks;
+  links: Links;
   image: Image;
   market_data: MarketData;
   last_updated: Date;
@@ -21,7 +63,7 @@ interface Image {
   large: string;
 }
 
-interface CoinGeckoCoinDataLinks {
+interface Links {
   homepage: string[];
   blockchain_site: string[];
   official_forum_url: string[];
@@ -83,25 +125,4 @@ interface Roi {
   times: number;
   currency: string;
   percentage: number;
-}
-
-export function useCoinData(coinGeckoId?: string) {
-  return useQuery(
-    ["token-data", coinGeckoId],
-    async ({ signal }) => {
-      const url = new URL(`https://api.coingecko.com/api/v3/coins/${coinGeckoId}`);
-      url.searchParams.append("tickers", "false");
-      url.searchParams.append("localization", "false");
-      url.searchParams.append("community_data", "false");
-      url.searchParams.append("developer_data", "false");
-
-      const response = await fetch(url, { signal });
-      return (await response.json()) as CoinData;
-    },
-    {
-      enabled: Boolean(coinGeckoId),
-      refetchInterval: 60 * 1000,
-      staleTime: 60 * 1000,
-    },
-  );
 }

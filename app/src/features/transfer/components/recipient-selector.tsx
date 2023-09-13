@@ -19,7 +19,7 @@ import { Button, Circle, Input, Text, Theme, XStack, YStack } from "tamagui";
 import { P, match } from "ts-pattern";
 import { isAddress, type Address } from "viem";
 import { useBalance } from "wagmi";
-import { useTransferContext } from "~/features/transfer-assets/context";
+import { useTransferContext } from "~/features/transfer/context";
 import { useDebounce } from "~/utils/hooks/use-debounce";
 import { usePrevious } from "~/utils/hooks/use-previous";
 import { shortenAddress } from "~/utils/shorten-address";

@@ -1,12 +1,12 @@
-import React, { useCallback, useState } from "react";
+import React from "react";
 
 import { LinearGradient } from "expo-linear-gradient";
 import {
+  StyleSheet,
+  View,
   type LayoutChangeEvent,
   type NativeScrollEvent,
   type ScrollViewProps,
-  StyleSheet,
-  View,
 } from "react-native";
 import Animated, {
   interpolate,
@@ -30,21 +30,19 @@ export function FadingScrollView({
   children,
   ...props
 }: FadingScrollViewProps) {
-  const nativeScrollEvent = useSharedValue<NativeScrollEvent | null>(null);
-  const [scrollableHeight, setScrollableHeight] = useState(0);
-  const [contentHeight, setContentHeight] = useState(0);
+  const nativeScrollEvent = useSharedValue<NativeScrollEvent | null>(null, true);
+  const scrollableHeight = useSharedValue(0, true);
+  const contentHeight = useSharedValue(0, true);
 
-  const handleLayoutChange = useCallback(({ nativeEvent }: LayoutChangeEvent) => {
-    setScrollableHeight(nativeEvent.layout.height);
-  }, []);
+  const handleLayoutChange = ({ nativeEvent }: LayoutChangeEvent) =>
+    (scrollableHeight.value = nativeEvent.layout.height);
 
-  const handleContentSizeChange = useCallback((_: number, height: number) => {
-    setContentHeight(height);
-  }, []);
+  const handleContentSizeChange = (_: number, height: number) =>
+    (contentHeight.value = height);
 
-  const scrollHandler = useAnimatedScrollHandler((event) => {
-    nativeScrollEvent.value = event;
-  });
+  const scrollHandler = useAnimatedScrollHandler(
+    (event) => (nativeScrollEvent.value = event),
+  );
 
   const startGradientStyle = useAnimatedStyle(() => {
     if (!nativeScrollEvent.value) {
@@ -65,13 +63,13 @@ export function FadingScrollView({
   const endGradientStyle = useAnimatedStyle(() => {
     if (!nativeScrollEvent.value) {
       return {
-        opacity: contentHeight > scrollableHeight ? 1 : 0,
+        opacity: contentHeight.value > scrollableHeight.value ? 1 : 0,
       };
     }
 
     const { contentOffset, layoutMeasurement, contentSize } = nativeScrollEvent.value;
 
-    if (contentHeight <= scrollableHeight) {
+    if (contentHeight.value <= scrollableHeight.value) {
       return {
         opacity: interpolate(contentOffset.y, [0, -fadeOffset], [0, 1]),
       };
@@ -104,7 +102,6 @@ export function FadingScrollView({
         end={{ x: 0, y: 0 }}
       />
 
-      {/* @ts-expect-error */}
       <Animated.ScrollView
         onScroll={scrollHandler}
         onContentSizeChange={handleContentSizeChange}
