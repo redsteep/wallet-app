@@ -1,4 +1,6 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
+import type BottomSheet from "@gorhom/bottom-sheet";
+import { type NavigationProp, useNavigation } from "@react-navigation/native";
 import { PanModal } from "@wallet/pan-modal";
 import { ImpactFeedbackStyle, impactAsync } from "expo-haptics";
 import { useMemo, useRef } from "react";
@@ -7,6 +9,7 @@ import { Separator, Text, View, XStack, YStack } from "tamagui";
 import { useAccount } from "wagmi";
 import { FadingScrollView } from "~/components/fading-scroll-view";
 import { SafeAreaStack } from "~/components/safe-area-stack";
+import { ActionButton } from "~/features/token/components/action-button";
 import { GraphSelectionDot } from "~/features/token/components/graph-selection-dot";
 import {
   TokenHeader,
@@ -15,11 +18,17 @@ import {
 import { TokenMarketStat } from "~/features/token/components/token-market-stat";
 import { useMarketCharts } from "~/features/token/hooks/use-market-charts";
 import { useTokenData } from "~/features/token/hooks/use-token-data";
-import { type AppStackScreenProps } from "~/navigation/navigators/app-navigator";
+import { RequestTransferModal } from "~/features/token/modals/request-transfer";
+import {
+  type AppStackParamList,
+  type AppStackScreenProps,
+} from "~/navigation/navigators/app-navigator";
 import { commify } from "~/utils/commify";
 
 export function TokenScreen({ route }: AppStackScreenProps<"Token">) {
   const headerRef = useRef<TokenHeaderRef>(null);
+  const bottomSheetRef = useRef<BottomSheet>(null);
+  const navigation = useNavigation<NavigationProp<AppStackParamList>>();
 
   const { address } = useAccount();
   const { tokenName, tokenAddress, tokenImage, coinGeckoId } = route.params.token;
@@ -185,7 +194,32 @@ export function TokenScreen({ route }: AppStackScreenProps<"Token">) {
             )}
           </YStack>
         </FadingScrollView>
+
+        <XStack padding="$4" space="$3">
+          <ActionButton flex={1} onPress={() => navigation.navigate("Receive")}>
+            <ActionButton.Icon backgroundColor="#49CF57">
+              <Ionicons name="arrow-down" color="white" size={24} />
+            </ActionButton.Icon>
+            <ActionButton.Text>Receive</ActionButton.Text>
+          </ActionButton>
+
+          <ActionButton flex={1} onPress={() => bottomSheetRef.current?.expand()}>
+            <ActionButton.Icon backgroundColor="#B3B3B3">
+              <Ionicons name="at" color="white" size={24} />
+            </ActionButton.Icon>
+            <ActionButton.Text>Request</ActionButton.Text>
+          </ActionButton>
+
+          <ActionButton flex={1} onPress={() => navigation.navigate("Transfer")}>
+            <ActionButton.Icon backgroundColor="#119BFF">
+              <Ionicons name="arrow-up" color="white" size={24} />
+            </ActionButton.Icon>
+            <ActionButton.Text>Send</ActionButton.Text>
+          </ActionButton>
+        </XStack>
       </SafeAreaStack>
+
+      <RequestTransferModal ref={bottomSheetRef} token={route.params.token} />
     </PanModal.Content>
   );
 }

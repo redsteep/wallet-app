@@ -54,16 +54,8 @@ export function ChooseAmountStep() {
 
   return (
     <YStack flex={1} justifyContent="space-between">
-      <YStack
-        flex={1}
-        alignItems="center"
-        justifyContent="space-between"
-        paddingVertical="$6"
-      >
-        {/* <Text fontSize="$12" fontWeight="700">
-          $
-        </Text> */}
-        <YStack height="$10" justifyContent="center">
+      <YStack flex={1} alignItems="center" justifyContent="space-between">
+        <YStack flex={1} justifyContent="center">
           <Text
             fontSize="$14"
             fontWeight="700"
@@ -82,6 +74,7 @@ export function ChooseAmountStep() {
             color="$red10"
             fontSize="$6"
             fontWeight="600"
+            paddingBottom="$6"
             entering={FadeInDown.springify()
               .mass(0.15)
               .damping(8)

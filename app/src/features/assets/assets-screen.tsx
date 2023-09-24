@@ -60,7 +60,7 @@ export function AssetsScreen({ navigation }: TabScreenProps<"Assets">) {
           </ActionButton>
         </PanModal.Trigger>
 
-        <PanModal.Trigger
+        {/* <PanModal.Trigger
           style={{ flex: 1 }}
           onPress={() => navigation.navigate("Transfer")}
         >
@@ -70,7 +70,7 @@ export function AssetsScreen({ navigation }: TabScreenProps<"Assets">) {
             </ActionButton.Icon>
             <ActionButton.Text>Swap</ActionButton.Text>
           </ActionButton>
-        </PanModal.Trigger>
+        </PanModal.Trigger> */}
       </XStack>
     </YStack>
   );

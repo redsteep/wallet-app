@@ -1,11 +1,11 @@
 import {
   LocalAccountSigner,
-  type SimpleSmartAccountOwner,
   SimpleSmartContractAccount,
   SmartAccountProvider,
   deepHexlify,
   resolveProperties,
   type SmartAccountProviderOpts,
+  type SmartAccountSigner,
   type UserOperationRequest,
   type UserOperationStruct,
 } from "@alchemy/aa-core";
@@ -59,7 +59,7 @@ export class SmartAccountConnector extends Connector<
   readonly ready = true;
 
   #provider?: SmartAccountProvider;
-  #signer?: SimpleSmartAccountOwner;
+  #signer?: SmartAccountSigner;
 
   constructor({
     chains,
