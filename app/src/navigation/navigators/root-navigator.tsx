@@ -6,7 +6,10 @@ import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import { useUserPreferences } from "~/lib/user-preferences";
-import { AppNavigator, type TabParamList } from "~/navigation/navigators/app-navigator";
+import {
+  AppNavigator,
+  type AppStackParamList,
+} from "~/navigation/navigators/app-navigator";
 import {
   OnboardingNavigator,
   type OnboardingStackParamList,
@@ -16,7 +19,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export type RootStackParamList = {
   Onboarding: NavigatorScreenParams<OnboardingStackParamList>;
-  App: NavigatorScreenParams<TabParamList>;
+  App: NavigatorScreenParams<AppStackParamList>;
 };
 
 export type RootStackScreenProps<T extends keyof RootStackParamList> =

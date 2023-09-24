@@ -79,13 +79,17 @@ export function ConfirmTransactionStep() {
     }
   });
 
+  const hasEnoughBalance = (tokenBalance?.value ?? 0n) >= (transferValue ?? 0n);
+  const canConfirmTransaction = hasEnoughBalance && !isLoading;
+
   return (
     <YStack flex={1} justifyContent="space-between" space="$4">
       <YStack flex={1} justifyContent="center" space="$8">
         <YStack space="$2">
           <Ionicons name="paper-plane" size={28} />
           <Text fontSize="$8" fontWeight="700">
-            Confirm transaction to {`\n${shortenAddress(recipientAddress!)}`}
+            Confirm transaction to{"\n"}
+            {shortenAddress(recipientAddress!)}
           </Text>
         </YStack>
 
@@ -213,8 +217,8 @@ export function ConfirmTransactionStep() {
         <Button
           size="$5"
           onPress={() => mutate()}
-          opacity={!isLoading ? 1.0 : 0.75}
-          disabled={isLoading}
+          opacity={canConfirmTransaction ? 1.0 : 0.75}
+          disabled={!canConfirmTransaction}
         >
           {isLoading && (
             <Button.Icon>
@@ -222,7 +226,7 @@ export function ConfirmTransactionStep() {
             </Button.Icon>
           )}
           <Button.Text fontSize="$6" fontWeight="600">
-            Confirm Transaction
+            {hasEnoughBalance ? "Confirm Transaction" : "Not Enough Balance"}
           </Button.Text>
         </Button>
       </Theme>

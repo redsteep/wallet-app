@@ -6,6 +6,7 @@ import Animated, { FadeInRight, FadeOutLeft } from "react-native-reanimated";
 import { Text, XStack } from "tamagui";
 import { P, match } from "ts-pattern";
 import { SafeAreaStack } from "~/components/safe-area-stack";
+import { ownedAssets } from "~/features/assets";
 import { RecipientSelector } from "~/features/transfer/components/recipient-selector";
 import { TransferContext } from "~/features/transfer/context";
 import { ChooseAmountStep } from "~/features/transfer/steps/choose-amount";
@@ -17,8 +18,12 @@ export function TransferScreen({
   route: { params },
   navigation,
 }: AppStackScreenProps<"Transfer">) {
+  const initialAsset = ownedAssets.find(
+    (asset) => asset.tokenAddress === params?.tokenAddress,
+  );
+
   const [recipientAddress, setRecipientAddress] = useState(params?.recipientAddress);
-  const [transferAsset, setTransferAsset] = useState(params?.asset);
+  const [transferAsset, setTransferAsset] = useState(initialAsset);
   const [transferValue, setTransferValue] = useState(params?.value);
 
   return (

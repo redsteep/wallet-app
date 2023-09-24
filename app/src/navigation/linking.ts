@@ -16,6 +16,11 @@ export const linking: LinkingOptions<RootStackParamList> = {
           Setup: w3aAuthRedirectPath,
         },
       },
+      App: {
+        screens: {
+          Transfer: "transfer",
+        },
+      },
     },
   },
   async getInitialURL() {

@@ -16,8 +16,6 @@ export function ActivityScreen() {
   const { pending, completed } = useTransactions((state) => state.transactions);
   const hasAnyTransactions = pending.length > 0 || completed.length > 0;
 
-  console.log(completed[0].input);
-
   if (!hasAnyTransactions) {
     return <NoActivity />;
   }

@@ -36,8 +36,11 @@ export type AppStackParamList = {
   Tabs: NavigatorScreenParams<TabParamList>;
   Token: { token: Asset };
   Receive: undefined;
-  Transfer?: { recipientAddress?: Address; asset?: Asset; value?: bigint };
-  // Transaction: { transactionHash: Hash };
+  Transfer?: {
+    recipientAddress?: Address;
+    tokenAddress?: string;
+    value?: bigint;
+  };
 };
 
 export type TabScreenProps<T extends keyof TabParamList> = CompositeScreenProps<
